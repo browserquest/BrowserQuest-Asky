@@ -6,6 +6,10 @@ define(['jquery', 'app'], function($, App) {
         $(document).ready(function() {
         	app = new App();
             app.center();
+
+            $('#container').bind("contextmenu", function(e){
+                e.preventDefault();
+            });
         
             if(Detect.isWindows()) {
                 // Workaround for graphical glitches on text
@@ -23,7 +27,8 @@ define(['jquery', 'app'], function($, App) {
                 }
                 
                 if($('#parchment').hasClass('about')) {
-                    app.toggleAbout();
+                    game.textWindowHandler.toggleTextWindow();
+                    game.toggleItemInfo();
                 }
             });
 	
@@ -40,15 +45,12 @@ define(['jquery', 'app'], function($, App) {
         	});
 	
         	$('#helpbutton').click(function() {
-                app.toggleAbout();
+                app.hideWindows();
+                game.textWindowHandler.toggleTextWindow();
+                game.toggleItemInfo();
         	});
-	
         	$('#achievementsbutton').click(function() {
                 app.toggleAchievements();
-                if(app.blinkInterval) {
-                    clearInterval(app.blinkInterval);
-                }
-                $(this).removeClass('blink');
         	});
 	
         	$('#instructions').click(function() {
@@ -76,7 +78,6 @@ define(['jquery', 'app'], function($, App) {
         	});
 	
         	$('.delete').click(function() {
-                app.storage.clear();
         	    app.animateParchment('confirmation', 'createcharacter');
         	});
 	
@@ -84,38 +85,19 @@ define(['jquery', 'app'], function($, App) {
         	    app.animateParchment('confirmation', 'loadcharacter');
         	});
         	
-        	$('.ribbon').click(function() {
-        	    app.toggleAbout();
-        	});
-
             $('#nameinput').bind("keyup", function() {
                 app.toggleButton();
             });
-    
-            $('#previous').click(function() {
-                var $achievements = $('#achievements');
-        
-                if(app.currentPage === 1) {
-                    return false;
-                } else {
-                    app.currentPage -= 1;
-                    $achievements.removeClass().addClass('active page' + app.currentPage);
-                }
+            $('#pwinput').bind("keyup", function() {
+                app.toggleButton();
+            });
+            $('#pwinput2').bind("keyup", function() {
+                app.toggleButton();
+            });
+            $('#emailinput').bind("keyup", function() {
+                app.toggleButton();
             });
     
-            $('#next').click(function() {
-                var $achievements = $('#achievements'),
-                    $lists = $('#lists'),
-                    nbPages = $lists.children('ul').length;
-        
-                if(app.currentPage === nbPages) {
-                    return false;
-                } else {
-                    app.currentPage += 1;
-                    $achievements.removeClass().addClass('active page' + app.currentPage);
-                }
-            });
-
             $('#notifications div').bind(TRANSITIONEND, app.resetMessagesPosition.bind(app));
     
             $('.close').click(function() {
@@ -136,20 +118,21 @@ define(['jquery', 'app'], function($, App) {
                return false;
             });
         
-            var data = app.storage.data;
-    		if(data.hasAlreadyPlayed) {
-    		    if(data.player.name && data.player.name !== "") {
-		            $('#playername').html(data.player.name);
-    		        $('#playerimage').attr('src', data.player.image);
-    		    }
-    		}
-    		
     		$('.play div').click(function(event) {
-                var nameFromInput = $('#nameinput').attr('value'),
-                    nameFromStorage = $('#playername').html(),
-                    name = nameFromInput || nameFromStorage;
-                
-                app.tryStartingGame(name);
+                var name = $('#nameinput').attr('value');
+                var pw = $('#pwinput').attr('value');
+                var pw2 = $('#pwinput2').attr('value');
+                var email = $('#emailinput').attr('value');
+                var loginname = $('#loginnameinput').attr('value');
+                var loginpw = $('#loginpwinput').attr('value');
+
+                if(loginpw === undefined || loginpw === ''){
+                    if(pw2 !== '' && pw2 !== undefined && pw === pw2){
+                        app.tryStartingGame(name, pw, email);
+                    }
+                } else{
+                    app.tryStartingGame(loginname, loginpw, email);
+                }
             });
         
             document.addEventListener("touchstart", function() {},false);
@@ -174,7 +157,6 @@ define(['jquery', 'app'], function($, App) {
 
     		game = new Game(app);
     		game.setup('#bubbles', canvas, background, foreground, input);
-    		game.setStorage(app.storage);
     		app.setGame(game);
     		
     		if(app.isDesktop && app.supportsWorkers) {
@@ -231,17 +213,18 @@ define(['jquery', 'app'], function($, App) {
     		    }
     		});
 	
-    		game.onAchievementUnlock(function(id, name, description) {
-    		    app.unlockAchievement(id, name);
-    		});
-	
     		game.onNotification(function(message) {
     		    app.showMessage(message);
     		});
 	
             app.initHealthBar();
+            app.initTargetHud();
+            app.initExpBar();
 	
             $('#nameinput').attr('value', '');
+            $('#pwinput').attr('value', '');
+            $('#pwinput2').attr('value', '');
+            $('#emailinput').attr('value', '');
     		$('#chatbox').attr('value', '');
     		
         	if(game.renderer.mobile || game.renderer.tablet) {
@@ -281,7 +264,9 @@ define(['jquery', 'app'], function($, App) {
                         app.closeInGameAbout();
                         hasClosedParchment = true;
                     } else {
-                        app.toggleAbout();
+//                        app.toggleAbout();
+                        game.textWindowHandler.toggleTextWindow();
+                        game.toggleItemInfo();
                     }
                 }
                 
@@ -344,10 +329,78 @@ define(['jquery', 'app'], function($, App) {
             $('#nameinput').keypress(function(event) {
                 var $name = $('#nameinput'),
                     name = $name.attr('value');
+                var $pw = $('#pwinput'),
+                    pw = $pw.attr('value');
+                var $pw2 = $('#pwinput2'),
+                    pw2 = $pw2.attr('value');
+                var $email = $('#emailinput'),
+                    email = $email.attr('value');
 
                 if(event.keyCode === 13) {
                     if(name !== '') {
-                        app.tryStartingGame(name, function() {
+                        if(pw2 !== '' && pw2 !== undefined && pw === pw2)
+                            app.tryStartingGame(name, pw, email, function() {
+                                $name.blur(); // exit keyboard on mobile
+                            });
+                        return false; // prevent form submit
+                    } else {
+                        return false; // prevent form submit
+                    }
+                }
+            });
+            $('#pwinput').keypress(function(event) {
+                var $name = $('#nameinput'),
+                    name = $name.attr('value');
+                var $pw = $('#pwinput'),
+                    pw = $pw.attr('value');
+                var $pw2 = $('#pwinput2'),
+                    pw2 = $pw2.attr('value');
+                var $email = $('#emailinput'),
+                    email = $email.attr('value');
+
+                if(event.keyCode === 13) {
+                    if(name !== '') {
+                        if(pw2 !== '' && pw2 !== undefined && pw === pw2)
+                            app.tryStartingGame(name, pw, email, function() {
+                                $name.blur(); // exit keyboard on mobile
+                            });
+                        return false; // prevent form submit
+                    } else {
+                        return false; // prevent form submit
+                    }
+                }
+            });
+            $('#pwinput2').keypress(function(event) {
+                var $name = $('#nameinput'),
+                    name = $name.attr('value');
+                var $pw = $('#pwinput'),
+                    pw = $pw.attr('value');
+                var $pw2 = $('#pwinput2'),
+                    pw2 = $pw2.attr('value');
+                var $email = $('#emailinput'),
+                    email = $email.attr('value');
+
+                if(event.keyCode === 13) {
+                    if(name !== '') {
+                        if(pw2 !== '' && pw2 !== undefined && pw === pw2)
+                            app.tryStartingGame(name, pw, email, function() {
+                                $name.blur(); // exit keyboard on mobile
+                            });
+                        return false; // prevent form submit
+                    } else {
+                        return false; // prevent form submit
+                    }
+                }
+            });
+            $('#loginpwinput').keypress(function(event) {
+                var $name = $('#nameinput'),
+                    name = $name.attr('value');
+                var $loginpw = $('#loginpwinput'),
+                    loginpw = $loginpw.attr('value');
+
+                if(event.keyCode === 13) {
+                    if(name !== '') {
+                        app.tryStartingGame(name, loginpw, "", function() {
                             $name.blur(); // exit keyboard on mobile
                         });
                         return false; // prevent form submit
@@ -365,31 +418,19 @@ define(['jquery', 'app'], function($, App) {
             	var key = e.which,
             	    $chat = $('#chatinput');
 
-                if($('#chatinput:focus').size() == 0 && $('#nameinput:focus').size() == 0) {
+                if($('#chatinput:focus').size() == 0 && $('#nameinput:focus').size() == 0 && game.ready) {
                     if(key === 13) { // Enter
-                        if(game.ready) {
-                            $chat.focus();
-                            return false;
-                        }
-                    }
-                    if(key === 32) { // Space
-                        // game.togglePathingGrid();
+                        $chat.focus();
                         return false;
-                    }
-                    if(key === 70) { // F
-                        // game.toggleDebugInfo();
+                    } else if(key === 8 ) { // BackSpace
                         return false;
-                    }
-                    if(key === 27) { // ESC
-                        app.hideWindows();
-                        _.each(game.player.attackers, function(attacker) {
-                            attacker.stop();
-                        });
+                    } else if(key === 49){ // 1
+                        game.keyDown(key);
                         return false;
-                    }
-                    if(key === 65) { // a
-                        // game.player.hit();
-                        return false;
+                    } else if(key === 107){ // +
+                        game.chathandler.incChatWindow();
+                    } else if(key === 109){ // -
+                        game.chathandler.decChatWindow();
                     }
                 } else {
                     if(key === 13 && game.ready) {

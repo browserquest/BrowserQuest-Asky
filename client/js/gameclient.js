@@ -10,6 +10,9 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.connected_callback = null;
             this.spawn_callback = null;
             this.movement_callback = null;
+
+            this.wrongpw_callback = null;
+            this.ban_callback = null;
         
             this.handlers = [];
             this.handlers[Types.Messages.WELCOME] = this.receiveWelcome;
@@ -31,6 +34,8 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.handlers[Types.Messages.KILL] = this.receiveKill;
             this.handlers[Types.Messages.HP] = this.receiveHitPoints;
             this.handlers[Types.Messages.BLINK] = this.receiveBlink;
+            this.handlers[Types.Messages.PVP] = this.receivePVP;
+            this.handlers[Types.Messages.ACHIEVEMENT] = this.receiveAchievement;
         
             this.useBison = false;
             this.enable();
@@ -84,6 +89,18 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                         self.isTimeout = true;
                         return;
                     }
+                    if(e.data === 'wrongpw'){
+                        if(self.wrongpw_callback){
+                            self.wrongpw_callback();
+                        }
+                        return;
+                    }
+                    if(e.data === 'ban'){
+                        if(self.ban_callback){
+                            self.ban_callback();
+                        }
+                        return;
+                    }
                     
                     self.receiveMessage(e.data);
                 };
@@ -95,12 +112,12 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                 this.connection.onclose = function() {
                     log.debug("Connection closed");
                     $('#container').addClass('error');
-                    
+
                     if(self.disconnected_callback) {
                         if(self.isTimeout) {
                             self.disconnected_callback("You have been disconnected for being inactive for too long");
-                        } else {
-                            self.disconnected_callback("The connection to BrowserQuest has been lost");
+                        } else{
+                            self.disconnected_callback("The connection to ASKY has been lost");
                         }
                     }
                 };
@@ -166,10 +183,18 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                 name = data[2],
                 x = data[3],
                 y = data[4],
-                hp = data[5];
+                hp = data[5],
+                armor = data[6],
+                weapon = data[7],
+                experience = data[8],
+                avatar = data[9],
+                inventory0 = data[10],
+                inventory1 = data[11];
+            var achievementFound = [data[12], data[14], data[16]];
+            var achievementProgress = [data[13], data[15], data[17]];
         
             if(this.welcome_callback) {
-                this.welcome_callback(id, name, x, y, hp);
+                this.welcome_callback(id, name, x, y, hp, armor, weapon, experience, avatar, inventory0, inventory1, achievementFound, achievementProgress);
             }
         },
     
@@ -316,10 +341,12 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
     
         receiveDamage: function(data) {
             var id = data[1],
-                dmg = data[2];
+                dmg = data[2],
+                hp = parseInt(data[3]),
+                maxHp = parseInt(data[4]);
         
             if(this.dmg_callback) {
-                this.dmg_callback(id, dmg);
+                this.dmg_callback(id, dmg, hp, maxHp);
             }
         },
     
@@ -334,9 +361,11 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
     
         receiveKill: function(data) {
             var mobKind = data[1];
+            var level = data[2];
+            var exp = data[3];
         
             if(this.kill_callback) {
-                this.kill_callback(mobKind);
+                this.kill_callback(mobKind, level, exp);
             }
         },
     
@@ -369,6 +398,19 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         
             if(this.blink_callback) {
                 this.blink_callback(id);
+            }
+        },
+        receivePVP: function(data){
+            var pvp = data[1];
+            if(this.pvp_callback){
+                this.pvp_callback(pvp);
+            }
+        },
+        receiveAchievement: function(data){
+            var id = data[1],
+                type = data[2];
+            if(this.achievement_callback){
+                this.achievement_callback(id, type);
             }
         },
         
@@ -463,12 +505,18 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         onItemBlink: function(callback) {
             this.blink_callback = callback;
         },
+        onPVPChange: function(callback){
+            this.pvp_callback = callback;
+        },
+        onAchievement: function(callback){
+            this.achievement_callback = callback;
+        },
 
         sendHello: function(player) {
             this.sendMessage([Types.Messages.HELLO,
                               player.name,
-                              Types.getKindFromString(player.getSpriteName()),
-                              Types.getKindFromString(player.getWeaponName())]);
+                              player.pw,
+                              player.email]);
         },
 
         sendMove: function(x, y) {
@@ -537,6 +585,18 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         sendCheck: function(id) {
             this.sendMessage([Types.Messages.CHECK,
                               id]);
+        },
+        sendInventory: function(type, inventoryNumber){
+            this.sendMessage([Types.Messages.INVENTORY,
+                              type, inventoryNumber]);
+        },
+        sendAchievement: function(id, type){
+            this.sendMessage([Types.Messages.ACHIEVEMENT,
+                              id, type]);
+        },
+        sendTalkToNPC: function(kind){
+            this.sendMessage([Types.Messages.TALKTONPC,
+                              kind]);
         }
     });
     

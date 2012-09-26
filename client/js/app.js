@@ -1,5 +1,5 @@
 
-define(['jquery', 'storage'], function($, Storage) {
+define(['jquery'], function($) {
 
     var App = Class.extend({
         init: function() {
@@ -8,7 +8,6 @@ define(['jquery', 'storage'], function($, Storage) {
             this.previousState = null;
             this.isParchmentReady = true;
             this.ready = false;
-            this.storage = new Storage();
             this.watchNameInputInterval = setInterval(this.toggleButton.bind(this), 100);
             this.$playButton = $('.play'),
             this.$playDiv = $('.play div');
@@ -35,7 +34,7 @@ define(['jquery', 'storage'], function($, Storage) {
             }
         },
         
-        tryStartingGame: function(username, starting_callback) {
+        tryStartingGame: function(username, userpw, email, starting_callback) {
             var self = this,
                 $play = this.$playButton;
             
@@ -55,17 +54,17 @@ define(['jquery', 'storage'], function($, Storage) {
                                 }
                             }, 1500);
                             clearInterval(watchCanStart);
-                            self.startGame(username, starting_callback);
+                            self.startGame(username, userpw, email, starting_callback);
                         }
                     }, 100);
                 } else {
                     this.$playDiv.unbind('click');
-                    this.startGame(username, starting_callback);
+                    this.startGame(username, userpw, email, starting_callback);
                 }      
             }
         },
         
-        startGame: function(username, starting_callback) {
+        startGame: function(username, userpw, email, starting_callback) {
             var self = this;
             
             if(starting_callback) {
@@ -77,13 +76,12 @@ define(['jquery', 'storage'], function($, Storage) {
                     // on the PLAY button instead of loading it in a web worker.
                     self.game.loadMap();
                 }
-                self.start(username);
+                self.start(username, userpw, email);
             });
         },
 
-        start: function(username) {
-            var self = this,
-                firstTimePlaying = !self.storage.hasAlreadyPlayed();
+        start: function(username, userpw, email) {
+            var self = this;
             
             if(username && !this.game.started) {
                 var optionsSet = false,
@@ -92,10 +90,10 @@ define(['jquery', 'storage'], function($, Storage) {
                 //>>includeStart("devHost", pragmas.devHost);
                 if(config.local) {
                     log.debug("Starting game with local dev config.");
-                    this.game.setServerOptions(config.local.host, config.local.port, username);
+                    this.game.setServerOptions(config.local.host, config.local.port, username, userpw, email);
                 } else {
                     log.debug("Starting game with default dev config.");
-                    this.game.setServerOptions(config.dev.host, config.dev.port, username);
+                    this.game.setServerOptions(config.dev.host, config.dev.port, username, userpw, email);
                 }
                 optionsSet = true;
                 //>>includeEnd("devHost");
@@ -103,16 +101,13 @@ define(['jquery', 'storage'], function($, Storage) {
                 //>>includeStart("prodHost", pragmas.prodHost);
                 if(!optionsSet) {
                     log.debug("Starting game with build config.");
-                    this.game.setServerOptions(config.build.host, config.build.port, username);
+                    this.game.setServerOptions(config.build.host, config.build.port, username, userpw, email);
                 }
                 //>>includeEnd("prodHost");
 
                 this.center();
                 this.game.run(function() {
                     $('body').addClass('started');
-                	if(firstTimePlaying) {
-                	    self.toggleInstructions();
-                	}
             	});
             }
         },
@@ -138,6 +133,63 @@ define(['jquery', 'storage'], function($, Storage) {
         	} else if(mouse.y >= height) {
         	    mouse.y = height - 1;
         	}
+        },
+        initTargetHud: function(){
+            var self = this;
+            var scale = self.game.renderer.getScaleFactor(),
+                healthMaxWidth = $("#target .health").width() - (12 * scale),
+                timeout;
+
+            this.game.player.onSetTarget(function(target, name, mouseover){
+                var el = '#target';
+                if(mouseover) el = '#inspector';
+                var sprite = target.sprite,
+                    x = ((sprite.animationData.idle_down.length-1)*sprite.width),
+                    y = ((sprite.animationData.idle_down.row)*sprite.height);
+                $(el+' .name').text(name);
+                $(el+' .headshot div').height(sprite.height).width(sprite.width);
+                $(el+' .headshot div').css('margin-left', -sprite.width/2).css('margin-top', -sprite.height/2);
+                $(el+' .headshot div').css('background', 'url(img/1/'+name+'.png) no-repeat -'+x+'px -'+y+'px');
+
+                if(target.healthPoints){
+                    $(el+" .health").css('width', Math.round(target.healthPoints/target.maxHp*100)+'%');
+                } else{
+                    $(el+" .health").css('width', '100%');
+                }
+
+                $(el).fadeIn('fast');
+                if(mouseover){
+                    clearTimeout(timeout);
+                    timeout = null;
+                    timeout = setTimeout(function(){
+                        $('#inspector').fadeOut('fast');
+                        self.game.player.inspecting = null;
+                    }, 2000);
+                }
+            });
+
+            self.game.onUpdateTarget(function(target){
+                $("#target .health").css('width', Math.round(target.healthPoints/target.maxHp*100) + "%");
+                if(self.game.player.inspecting && self.game.player.inspecting.id === target.id){
+                    $("#inspector .health").css('width', Math.round(target.healthPoints/target.maxHp*100) + "%");
+                }
+            });
+
+            self.game.player.onRemoveTarget(function(targetId){
+                $('#target').fadeOut('fast');
+                if(self.game.player.inspecting && self.game.player.inspecting.id === targetId){
+                    $('#inspector').fadeOut('fast');
+                    self.game.player.inspecting = null;
+                }
+            });
+        },
+        initExpBar: function(){
+            var maxHeight = $("#expbar").height();
+
+            this.game.onPlayerExpChange(function(expInThisLevel, expForLevelUp){
+               var barHeight = Math.round((maxHeight / expForLevelUp) * (expInThisLevel > 0 ? expInThisLevel : 0));
+               $("#expbar").css('height', barHeight + "px");
+            });
         },
 
         initHealthBar: function() {
@@ -173,6 +225,13 @@ define(['jquery', 'storage'], function($, Storage) {
                 $('#character').addClass('disabled');
             }
         },
+        toggleAchievements: function(){
+            if(this.game.textWindowHandler.textWindowOn){
+                this.game.textWindowHandler.close();
+                this.game.closeItemInfo();
+            }
+            $('#achievements').toggleClass('active');
+        },
 
         hideIntro: function(hidden_callback) {
             clearInterval(this.watchNameInputInterval);
@@ -186,6 +245,7 @@ define(['jquery', 'storage'], function($, Storage) {
         showChat: function() {
             if(this.game.started) {
                 $('#chatbox').addClass('active');
+                $('#chatbox .legend').fadeIn('fast');
                 $('#chatinput').focus();
                 $('#chatbutton').addClass('active');
             }
@@ -194,38 +254,9 @@ define(['jquery', 'storage'], function($, Storage) {
         hideChat: function() {
             if(this.game.started) {
                 $('#chatbox').removeClass('active');
+                $('#chatbox .legend').fadeOut('fast');
                 $('#chatinput').blur();
                 $('#chatbutton').removeClass('active');
-            }
-        },
-
-        toggleInstructions: function() {
-            if($('#achievements').hasClass('active')) {
-        	    this.toggleAchievements();
-        	    $('#achievementsbutton').removeClass('active');
-        	}
-            $('#instructions').toggleClass('active');
-        },
-
-        toggleAchievements: function() {
-        	if($('#instructions').hasClass('active')) {
-        	    this.toggleInstructions();
-        	    $('#helpbutton').removeClass('active');
-        	}
-            this.resetPage();
-            $('#achievements').toggleClass('active');
-        },
-
-        resetPage: function() {
-            var self = this,
-                $achievements = $('#achievements');
-
-            if($achievements.hasClass('active')) {
-                $achievements.bind(TRANSITIONEND, function() {
-                    $achievements.removeClass('page' + self.currentPage).addClass('page1');
-                    self.currentPage = 1;
-                    $achievements.unbind(TRANSITIONEND);
-                });
             }
         },
 
@@ -235,195 +266,23 @@ define(['jquery', 'storage'], function($, Storage) {
                     return 'img/'+ scale +'/item-' + spriteName + '.png';
                 },
                 weapon = this.game.player.getWeaponName(),
-                armor = this.game.player.getSpriteName(),
+                armor = this.game.player.getArmorName(),
                 weaponPath = getIconPath(weapon),
                 armorPath = getIconPath(armor);
 
             $('#weapon').css('background-image', 'url("' + weaponPath + '")');
-            if(armor !== 'firefox') {
-                $('#armor').css('background-image', 'url("' + armorPath + '")');
-            }
+            $('#armor').css('background-image', 'url("' + armorPath + '")');
         },
 
         hideWindows: function() {
-            if($('#achievements').hasClass('active')) {
-        	    this.toggleAchievements();
-        	    $('#achievementsbutton').removeClass('active');
-        	}
-        	if($('#instructions').hasClass('active')) {
-        	    this.toggleInstructions();
-        	    $('#helpbutton').removeClass('active');
-        	}
-        	if($('body').hasClass('credits')) {
-        	    this.closeInGameCredits();
-        	}
-        	if($('body').hasClass('about')) {
-        	    this.closeInGameAbout();
-        	}
-        },
-
-        showAchievementNotification: function(id, name) {
-            var $notif = $('#achievement-notification'),
-                $name = $notif.find('.name'),
-                $button = $('#achievementsbutton');
-
-            $notif.removeClass().addClass('active achievement' + id);
-            $name.text(name);
-            if(this.game.storage.getAchievementCount() === 1) {
-                this.blinkInterval = setInterval(function() {
-                    $button.toggleClass('blink');
-                }, 500);
+            if($('#achievements').hasClass('active')){
+                this.toggleAchievements();
+                $('#achievementsbutton').removeClass('active');
             }
-            setTimeout(function() {
-                $notif.removeClass('active');
-                $button.removeClass('blink');
-            }, 5000);
+            this.game.textWindowHandler.close();
+            this.game.closeItemInfo();
         },
 
-        displayUnlockedAchievement: function(id) {
-            var $achievement = $('#achievements li.achievement' + id);
-
-            var achievement = this.game.getAchievementById(id);
-            if(achievement && achievement.hidden) {
-                this.setAchievementData($achievement, achievement.name, achievement.desc);
-            }
-            $achievement.addClass('unlocked');
-        },
-
-        unlockAchievement: function(id, name) {
-            this.showAchievementNotification(id, name);
-            this.displayUnlockedAchievement(id);
-
-            var nb = parseInt($('#unlocked-achievements').text());
-            $('#unlocked-achievements').text(nb + 1);
-        },
-
-        initAchievementList: function(achievements) {
-            var self = this,
-                $lists = $('#lists'),
-                $page = $('#page-tmpl'),
-                $achievement = $('#achievement-tmpl'),
-                page = 0,
-                count = 0,
-                $p = null;
-
-            _.each(achievements, function(achievement) {
-                count++;
-    
-                var $a = $achievement.clone();
-                $a.removeAttr('id');
-                $a.addClass('achievement'+count);
-                if(!achievement.hidden) {
-                    self.setAchievementData($a, achievement.name, achievement.desc);
-                }
-                $a.find('.twitter').attr('href', 'http://twitter.com/share?url=http%3A%2F%2Fbrowserquest.mozilla.org&text=I%20unlocked%20the%20%27'+ achievement.name +'%27%20achievement%20on%20Mozilla%27s%20%23BrowserQuest%21&related=glecollinet:Creators%20of%20BrowserQuest%2Cwhatthefranck');
-                $a.show();
-                $a.find('a').click(function() {
-                     var url = $(this).attr('href');
-
-                    self.openPopup('twitter', url);
-                    return false;
-                });
-    
-                if((count - 1) % 4 === 0) {
-                    page++;
-                    $p = $page.clone();
-                    $p.attr('id', 'page'+page);
-                    $p.show();
-                    $lists.append($p);
-                }
-                $p.append($a);
-            });
-
-            $('#total-achievements').text($('#achievements').find('li').length);
-        },
-
-        initUnlockedAchievements: function(ids) {
-            var self = this;
-            
-            _.each(ids, function(id) {
-                self.displayUnlockedAchievement(id);
-            });
-            $('#unlocked-achievements').text(ids.length);
-        },
-
-        setAchievementData: function($el, name, desc) {
-            $el.find('.achievement-name').html(name);
-            $el.find('.achievement-description').html(desc);
-        },
-
-        toggleCredits: function() {
-            var currentState = $('#parchment').attr('class');
-
-            if(this.game.started) {
-                $('#parchment').removeClass().addClass('credits');
-                
-                $('body').toggleClass('credits');
-                    
-                if(!this.game.player) {
-                    $('body').toggleClass('death');
-                }
-                if($('body').hasClass('about')) {
-                    this.closeInGameAbout();
-                    $('#helpbutton').removeClass('active');
-                }
-            } else {
-                if(currentState !== 'animate') {
-                    if(currentState === 'credits') {
-                        this.animateParchment(currentState, this.previousState);
-                    } else {
-            	        this.animateParchment(currentState, 'credits');
-            	        this.previousState = currentState;
-            	    }
-                }
-            }
-        },
-        
-        toggleAbout: function() {
-            var currentState = $('#parchment').attr('class');
-
-            if(this.game.started) {
-                $('#parchment').removeClass().addClass('about');
-                $('body').toggleClass('about');
-                if(!this.game.player) {
-                    $('body').toggleClass('death');
-                }
-                if($('body').hasClass('credits')) {
-                    this.closeInGameCredits();
-                }
-            } else {
-                if(currentState !== 'animate') {
-                    if(currentState === 'about') {
-                        if(localStorage && localStorage.data) {
-                            this.animateParchment(currentState, 'loadcharacter');
-                        } else {
-                            this.animateParchment(currentState, 'createcharacter');
-                        }
-                    } else {
-            	        this.animateParchment(currentState, 'about');
-            	        this.previousState = currentState;
-            	    }
-                }
-            }
-        },
-
-        closeInGameCredits: function() {
-            $('body').removeClass('credits');
-            $('#parchment').removeClass('credits');
-            if(!this.game.player) {
-                $('body').addClass('death');
-            }
-        },
-        
-        closeInGameAbout: function() {
-            $('body').removeClass('about');
-            $('#parchment').removeClass('about');
-            if(!this.game.player) {
-                $('body').addClass('death');
-            }
-            $('#helpbutton').removeClass('active');
-        },
-        
         togglePopulationInfo: function() {
             $('#population').toggleClass('visible');
         },
@@ -521,12 +380,103 @@ define(['jquery', 'storage'], function($, Storage) {
                 if(this.game.started) {
                     this.game.resize();
                     this.initHealthBar();
+                    this.initTargetHud();
+                    this.initExpBar();
                     this.game.updateBars();
                 } else {
                     var newScale = this.game.renderer.getScaleFactor();
                     this.game.renderer.rescale(newScale);
                 }
             } 
+        },
+        initAchievementList: function(achievements){
+            var self = this,
+                $lists = $('#lists'),
+                $page = $('#page-tmpl'),
+                $achievement = $('#achievement-tmpl'),
+                page = 0,
+                count = 0,
+                $p = null;
+
+            _.each(achievements, function(achievement){
+                count++;
+
+                var $a = $achievement.clone();
+                $a.removeAttr('id');
+                $a.addClass('achievement'+count);
+                if(!achievement.hidden){
+                    self.setAchievementData($a, achievement.name, achievement.desc);
+                }
+                $a.find('.twitter').attr('href', 'http://twitter.com/share?url=http%3A%2F%2Fasky.freethinker.kr&text=I%20unlocked%20the%20%27' + achievement.name);
+                $a.show();
+                $a.find('a').click(function(){
+                    var url = $(this).attr('href');
+
+                    self.openPopup('twitter', url);
+                    return false;
+                });
+
+                if((count - 1) % 4 === 0){
+                    page++;
+                    $p = $page.clone();
+                    $p.attr('id', 'page'+page);
+                    $p.show();
+                    $lists.append($p);
+                }
+                $p.append($a);
+            });
+//            $('#total-achievements').text($('#achievements').find('li').length);
+            $('#total-achievements').text(3);
+        },
+        initUnlockedAchievements: function(achievements){
+            var self = this,
+                count = 0;
+            _.each(achievements, function(achievement){
+                if(achievement.completed){
+                    self.displayUnlockedAchievement(achievement);
+                    count++;
+                }
+            });
+            $('#unlocked-achievements').text(count);
+        },
+        setAchievementData: function($el, name, desc){
+            $el.find('.achievement-name').html(name);
+            $el.find('.achievement-description').html(desc);
+        },
+        displayUnhiddenAchievement: function(achievement){
+            var $achievement = $('#achievements li.achievement' + achievement.id);
+
+            if(achievement && achievement.hidden){
+                this.setAchievementData($achievement, achievement.name, achievement.desc);
+                this.showAchievementNotification(achievement.id, achievement.name, "퀘스트 발견!");
+                this.game.client.sendAchievement(achievement.id, "found");
+            }
+        },
+        showAchievementNotification: function(id, name, title){
+            var $notif = $('#achievement-notification'),
+                $name = $notif.find('.name'),
+                $title = $notif.find('.title'),
+                $button = $('#achievementsbutton');
+
+            $name.text(name);
+            $title.text(title);
+            $notif.removeClass().addClass('active achievement' + id);
+            this.blinkInterval = setInterval(function(){
+                $button.toggleClass('blink');
+            }, 500);
+            setTimeout(function(){
+                $notif.removeClass('active');
+                $button.removeClass('blink');
+            }, 5000);
+        },
+        displayUnlockedAchievement: function(achievement){
+            var $achievement = $('#achievements li.achievement' + achievement.id);
+            if(achievement){
+                this.setAchievementData($achievement, achievement.name, achievement.desc);
+            }
+            $achievement.addClass('unlocked');
+            var nb = parseInt($('#unlocked-achievements').text());
+            $('#unlocked-achievements').text(nb+1);
         }
     });
 

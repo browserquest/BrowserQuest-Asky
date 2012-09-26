@@ -108,6 +108,7 @@ define(['character', 'timer'], function(Character, Timer) {
                         g.endZoning();
                     }
                 } else if(orientation === Types.Orientations.UP || orientation === Types.Orientations.DOWN) {
+//                } else {
                     offset = (c.gridH - 2) * ts;
                     startValue = (orientation === Types.Orientations.UP) ? c.y - ts : c.y + ts;
                     endValue = (orientation === Types.Orientations.UP) ? c.y - offset : c.y + offset;
@@ -217,6 +218,11 @@ define(['character', 'timer'], function(Character, Timer) {
             var target = this.game.targetAnimation;
             if(target) {
                 target.update(t);
+            }
+
+            var benef = this.game.benefAnimation;
+            if(benef) {
+                benef.update(t);
             }
         },
     

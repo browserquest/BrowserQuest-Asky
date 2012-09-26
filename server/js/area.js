@@ -27,6 +27,12 @@ module.exports = Area = cls.Class.extend({
         }
         return pos;
     },
+    contains: function(x, y){
+        return x >= this.x
+        && y >= this.y
+        && x < this.x + this.width
+        && y < this.y + this.height;
+    },
     
     removeFromArea: function(entity) {
         var i = _.indexOf(_.pluck(this.entities, 'id'), entity.id);

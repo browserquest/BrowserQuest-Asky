@@ -1,32 +1,14 @@
-<!DOCTYPE html>
-<!-- 
-
- , __                                   __                      
-/|/  \                                 /  \                     
- | __/ ,_    __           ,   _   ,_  | __ |          _   , _|_ 
- |   \/  |  /  \_|  |  |_/ \_|/  /  | |/  \|  |   |  |/  / \_|  
- |(__/   |_/\__/  \/ \/   \/ |__/   |_/\__/\_/ \_/|_/|__/ \/ |_/
-
-Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworkshop.fr
-
-* Client libraries used: RequireJS, Underscore.js, jQuery, Modernizr
-* Server-side: Node.js, Worlize/WebSocket-Node, miksago/node-websocket-server
-* Should work in latest versions of Firefox, Chrome, Safari, Opera, Safari Mobile and Firefox for Android
-
- -->
-<html lang="en">
+<html lang="ko">
 	<head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
         <link rel="icon" type="image/png" href="img/common/favicon.png">
-        <meta property="og:title" content="BrowserQuest">
+        <meta property="og:title" content="안생겨요">
         <meta property="og:type" content="website">
-        <meta property="og:url" content="http://browserquest.mozilla.org/">
-        <meta property="og:image" content="http://browserquest.mozilla.org/img/common/promo-title.jpg">
-        <meta property="og:site_name" content="BrowserQuest">
-        <meta property="og:description" content="Play Mozilla's BrowserQuest, an HTML5 massively multiplayer game demo powered by WebSockets!">
+        <meta property="og:url" content="http://asky.freethinker.kr/">
+        <meta property="og:site_name" content="안생겨요">
         <link rel="stylesheet" href="css/main.css" type="text/css">
         <link rel="stylesheet" href="css/achievements.css" type="text/css">
         <script src="js/lib/modernizr.js" type="text/javascript"></script>
@@ -38,7 +20,7 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
                 </script>
         <![endif]-->
         <script src="js/detect.js" type="text/javascript"></script>
-        <title>BrowserQuest</title>
+        <title>안생겨요</title>
 	</head>
     <!--[if lt IE 9]>
 	<body class="intro upscaled">
@@ -46,10 +28,10 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
 	<body class="intro">
 	    <noscript>
 	       <div class="alert">
-	           You need to enable JavaScript to play BrowserQuest.
+	           안생겨요를 하시려면 자바스크립트 실행가능한 웹브라우저를 사용하셔야 합니다.
 	       </div>
 	    </noscript>
-	    <a id="moztab" class="clickable" target="_blank" href="http://www.mozilla.org/"></a>
+	    <a id="moztab" class="clickable" target="_blank" href="http://freethinker.kr/asky"></a>
 	    <div id="intro">
 	        <h1 id="logo">
 	           <span id="logosparks">
@@ -58,7 +40,7 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
 	        </h1>
 	        <article id="portrait">
 	            <p>
-	               Please rotate your device to landscape mode
+	               창 너비가 너무 좁습니다. 모바일이라면 옆으로 돌려주세요.
 	            </p>
 	            <div id="tilt"></div>
 	        </article>
@@ -68,139 +50,62 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
                     <article id="createcharacter">
           	           <h1>
           	               <span class="left-ornament"></span>
-          	               A Massively Multiplayer Adventure
+          	               새 캐릭 만들기
           	               <span class="right-ornament"></span>
                          </h1>
-                         <div id="character" class="disabled">
-                             <div></div>
-                         </div>
                          <form action="none" method="get" accept-charset="utf-8">
-                             <input type="text" id="nameinput" class="stroke" name="player-name" placeholder="Name your character" maxlength="15">
+                             <input type="text" id="nameinput" class="stroke" name="player-name" placeholder="닉네임(한글,영문,숫자)" maxlength="8">
+                             <input type="password" id="pwinput" class="stroke" name="player-pw" placeholder="비밀번호" maxlength="15">
+                             <input type="password" id="pwinput2" class="stroke" name="player-pw2" placeholder="비밀번호 확인" maxlength="15">
+                             <input type="text" id="emailinput" class="stroke" name="player-email" placeholder="이메일(비번분실시 사용, 필수 아님)" maxlength="48">
                          </form>
                          <div class="play button disabled">
                              <div></div>
                              <img src="img/common/spinner.gif" alt="">
                          </div>
-                         <div class="ribbon">
-                            <div class="top"></div>
-                            <div class="bottom"></div>
-                         </div>
                     </article>
                     <article id="loadcharacter">
           	           <h1>
           	               <span class="left-ornament"></span>
-          	               Load your character
+          	               안생겨요
           	               <span class="right-ornament"></span>
                          </h1>
-                         <div class="ribbon">
-                            <div class="top"></div>
-                            <div class="bottom"></div>
-                         </div>
-                         <img id="playerimage" src="">
-                         <div id="playername" class="stroke">
-                         </div>
+                         <form action="none" method="get" accept-charset="utf-8">
+                             <input type="text" id="loginnameinput" class="stroke" name="player-name" placeholder="닉네임(한글,영문,숫자)" maxlength="8">
+                             <input type="password" id="loginpwinput" class="stroke" name="player-loginpw" placeholder="비밀번호" maxlength="15">
+                         </form>
                          <div class="play button">
                              <div></div>
                              <img src="img/common/spinner.gif" alt="">
                          </div>
                          <div id="create-new">
-                            <span><span>or</span> create a new character</span>
+                            <span>새 캐릭 만들기</span>
                          </div>
                     </article>
                     <article id="confirmation">
           	           <h1>
           	               <span class="left-ornament"></span>
-          	               Delete your character?
+          	               새 캐릭을 만드시겠습니까?
           	               <span class="right-ornament"></span>
                          </h1>
-                         <p>
-                             All your items and achievements will be lost.<br>
-                             Are you sure you wish to continue?
-                         </p>
                          <div class="delete button"></div>
                          <div id="cancel">
-                            <span>cancel</span>
+                            <span>취소</span>
                          </div>
                     </article>
-    	            <article id="credits">
-        	            <h1>
-         	               <span class="left-ornament"></span>
-         	               <span class="title">
-         	                   Made for Mozilla by <a target="_blank" class="stroke clickable" href="http://www.littleworkshop.fr/">Little Workshop</a>
-         	               </span>
-         	               <span class="right-ornament"></span>
-                        </h1>
-                        <div id="authors">
-                            <div id="guillaume">
-                                <div class="avatar"></div>
-                                Pixels by
-                                <a class="stroke clickable" target="_blank" href="http://twitter.com/glecollinet">Guillaume Lecollinet</a>
-                            </div>
-                            <div id="franck">
-                                <div class="avatar"></div>
-                                Code by
-                                <a class="stroke clickable" target="_blank" href="http://twitter.com/whatthefranck">Franck Lecollinet</a>
-                            </div>
-                        </div>
-                        <div id="seb">
-                            
-                            <span id="note"></span>
-                            Music by <a class="clickable" target="_blank" href="http://soundcloud.com/gyrowolf/sets/gyrowolfs-rpg-maker-music-pack/">Gyrowolf</a>, <a class="clickable" target="_blank" href="http://blog.dayjo.org/?p=335">Dayjo</a>, <a class="clickable" target="_blank" href="http://soundcloud.com/freakified/what-dangers-await-campus-map">Freakified</a>, &amp; <a target="_blank" class="clickable" href="http://www.newgrounds.com/audio/listen/349734">Camoshark</a>
-                           
-                        </div>
-	                    <div id="close-credits">
-	                        <span>- click anywhere to close -</span>
-                        </div>
-    	            </article>
-    	            <article id="about">
-        	            <h1>
-         	               <span class="left-ornament"></span>
-         	               <span class="title">
-         	                   What is BrowserQuest?
-         	               </span>
-         	               <span class="right-ornament"></span>
-                        </h1>
-                        <p id="game-desc">
-                            BrowserQuest is a multiplayer game inviting you to explore a
-                            world of adventure from your Web browser.
-                        </p>
-                        <div class="left">
-                            <div class="img"></div>
-                            <p>
-                                This demo is powered by HTML5 and WebSockets, which allow for real-time gaming and apps on the Web.
-                            </p>
-                            <span class="link">
-                                <span class="ext-link"></span>
-                                <a target="_blank" class="clickable" href="http://hacks.mozilla.org/2012/03/browserquest/">Learn more</a> about the technology
-                            </span>
-                        </div>
-                        <div class="right">
-                            <div class="img"></div>
-                            <p>
-                                BrowserQuest is available on Firefox, Chrome, Safari as well as iOS devices and Firefox for Android.
-                            </p>
-                            <span class="link">
-                                <span class="ext-link"></span>
-                                <a target="_blank" class="clickable" href="http://github.com/mozilla/BrowserQuest">Grab the source</a> on Github
-                            </span>
-                        </div>
-	                    <div id="close-about">
-	                        <span>- click anywhere to close -</span>
-                        </div>
-    	            </article>
     	            <article id="death">
-                        <p>You are dead...</p>
+                        <p>부활하세요.</p>
     					<div id="respawn" class="button"></div>
     	            </article>
                     <article id="error">
           	           <h1>
           	               <span class="left-ornament"></span>
-          	               Your browser cannot run BrowserQuest!
+                               이 웹브라우저에서는 안생겨요를 실행하실 수 없습니다.
           	               <span class="right-ornament"></span>
                          </h1>
                          <p>
-                             We're sorry, but your browser does not support WebSockets.<br>
-                             In order to play, we recommend using the latest version of Firefox, Chrome or Safari.
+                             이 웹브라우저는 WebSocket을 지원하지 않네요.<br>
+                             플레이하시려면, 크롬, 쿨보노, 파폭 최신버전을 이용해주세요.
                          </p>
                     </article>
 	            </div>
@@ -209,55 +114,54 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
 	    </div>
 		<div id="container">
 		    <div id="canvasborder">
-		        <article id="instructions" class="clickable">
-		            <div class="close"></div>
-		            <h1>
-     	               <span class="left-ornament"></span>
-     	               How to play
-     	               <span class="right-ornament"></span>
-	                </h1>
-	                <ul>
-	                   <li><span class="icon"></span>Left click or tap to move, attack and pick up items.</li>
-	                   <li><span class="icon"></span>Press ENTER to chat.</li>
-	                   <li><span class="icon"></span>Your character is automatically saved as you play.</li>
-	                </ul>
-	                    <p>- click anywhere to close -</p>
-		        </article>
-		        <article id="achievements" class="page1 clickable">
-		            <div class="close"></div>
-		            <div id="achievements-wrapper">
-		                <div id="lists">
-        		        </div>
-    		        </div>
-    		        <div id="achievements-count" class="stroke">
-    		            Completed
-    		            <div>
-    		                <span id="unlocked-achievements">0</span>
-    		                /
-    		                <span id="total-achievements"></span>
-    		            </div> 
-    		        </div>
-		            <nav class="clickable">
-		                <div id="previous"></div>
-		                <div id="next"></div>
-		            </nav>
-		        </article>
+                <article id="achievements" class="page1 clickable">
+                    <div class="close"></div>
+                    <div id="achievements-wrapper">
+                        <div id="lists">
+                        </div>
+                    </div>
+                    <div id="achievements-count" class="stroke">
+                        <div>
+                            <span id="unlocked-achievements">0</span>
+                            /
+                            <span id="total-achievements">0</span>
+                        </div>
+                        완료
+                    </div>
+                    <nav class="clickable">
+                        <div id="previous"></div>
+                        <div id="next"></div>
+                    </nav>
+                </article>
     			<div id="canvas">
     				<canvas id="background"></canvas>
     				<canvas id="entities"></canvas>
     				<canvas id="foreground" class="clickable"></canvas>
     			</div>
-    			<div id="bubbles">				
-    			</div>
-    			<div id="achievement-notification">
-    			    <div class="coin">
-    			        <div id="coinsparks"></div>
-    			    </div>
-    			    <div id="achievement-info">
-        			    <div class="title">New Achievement Unlocked!</div>
-        			    <div class="name"></div>
-    			    </div>
-    			</div>
+    			<div id="bubbles"></div>
+    			<div id="expbar"></div>
+    			<div id="textWindow"></div>
+                <div id="chatLog"></div>
+    			<div id="target">
+                            <div class="headshot"><div></div></div>
+                            <div class="details">
+                                <div class="name"></div>
+                                <div class="health"></div>
+                            </div>
+                        </div>
+    			<div id="inspector">
+                    <div class="headshot"><div> </div></div>
+                    <div class="details">
+                        <div class="name"></div>
+                        <div class="health"></div>
+                    </div>
+                </div>
+                <div id="achievement-notification">
+                    <div id="achievement-info">
+                        <div class="title"></div>
+                        <div class="name"></div>
+                    </div>
+                </div>
     			<div id="bar-container">
 					<div id="healthbar">
 					</div>
@@ -272,12 +176,12 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
 					    </div>
 					</div>
                     <div id="playercount" class="clickable">
-                        <span class="count">0</span> <span>players</span>
+                        <span class="count">0</span> <span>명</span>
                     </div>
                     <div id="barbuttons">
                         <div id="chatbutton" class="barbutton clickable"></div>
                         <div id="achievementsbutton" class="barbutton clickable"></div>
-                        <div id="helpbutton" class="barbutton clickable"></div>
+                        <div id="helpbutton" class="barbutton clickable active"></div>
                         <div id="mutebutton" class="barbutton clickable active"></div>
                     </div>
     			</div>
@@ -288,22 +192,20 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
 				</div>
                 <div id="population">
                     <div id="instance-population" class="">
-                        <span>0</span> <span>players</span> in your instance
+                        <span>0</span> <span>명</span>
                     </div>
                     <div id="world-population" class="">
-                        <span>0</span> <span>players</span> total
+                        <span>0</span> <span>명</span>
                     </div>
                 </div>
 		    </div>
 		</div>
 		<footer>
 		    <div id="sharing" class="clickable">
-		      Share this on 
-              <a href="http://twitter.com/share?url=http%3A%2F%2Fbrowserquest.mozilla.org&amp;text=Mozilla%27s%20BrowserQuest%3A%20HTML5%20massively%20multiplayer%20adventure%20game%20%23demo%20%23websockets&amp;related=glecollinet:Creators%20of%20BrowserQuest%2Cwhatthefranck" class="twitter"></a>
-              <a href="http://www.facebook.com/share.php?u=http://browserquest.mozilla.org/" class="facebook"></a>
-		    </div>
-		    <div id="credits-link" class="clickable">
-		      – <span id="toggle-credits">Credits</span>
+			    <p>
+				    <a href="http://twitter.com/share?url=http%3A%2F%2Fasky.freethinker.kr&amp;text=안생겨요%3A%20웹브라우저로 바로 즐기는 MMORPG" class="twitter"></a>
+				    <a href="http://www.facebook.com/share.php?u=http://asky.freethinker.kr" class="facebook"></a>
+		        </p>
 		    </div>
 		</footer>
 		
@@ -312,10 +214,10 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
         <ul>
             <li id="achievement-tmpl" style="display:none">
                 <div class="coin"></div>
-                <span class="achievement-name">???</span>
-                <span class="achievement-description">???</span>
+                <span class="achievement-name">히든 퀘스트</span>
+                <span class="achievement-description">히든 퀘스트</span>
                 <div class="achievement-sharing">
-                  <a href="" class="twitter"></a>
+                    <a href="" class="twitter"></a>
                 </div>
             </li>
         </ul>
@@ -339,14 +241,13 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
             if(!Modernizr.localstorage) {
                 var alert = document.createElement("div");
                     alert.className = 'alert';
-                    alertMsg = document.createTextNode("You need to enable cookies/localStorage to play BrowserQuest");
+                    alertMsg = document.createTextNode("안생겨요를 플레이하시려면, 쿠키와 로컬 저장장치를 사용할 수 있어야 합니다.");
                     alert.appendChild(alertMsg);
 
                 target = document.getElementById("intro");
                 document.body.insertBefore(alert, target);
-            } else if(localStorage && localStorage.data) {
-                parchment.className = "loadcharacter";
             }
+            parchment.className = "loadcharacter";
         </script>
         
         <script src="js/lib/log.js"></script>

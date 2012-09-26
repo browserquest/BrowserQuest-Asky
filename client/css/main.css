@@ -168,6 +168,113 @@ footer, header, hgroup, menu, nav, section {
     .barbutton {background:url('../img/1/barsheet.png');image-rendering:-moz-crispt-edges;position:absolute;}
     
     #chatbox {background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;left:50%;z-index:5;-moz-transition:0.2s bottom ease;-webkit-transition:0.2s bottom ease;-o-transition:0.2s bottom ease;-ms-transition:0.2s bottom ease;transition:0.2s bottom ease;}
+    #chatbox .legend{
+      position: absoute;
+      top: -20px;
+      left: 10px;
+      padding: 4px 6px;
+      color: #FFF;
+      background: rgba(45,45,45,0.8);
+      z_index: 4;
+      border-radius: 3px 3px 0 0;
+      diplay: none;
+    }
+    #chatbox .legend p{
+      line-height: 1;
+    }
+
+    div.clear{
+      float: left;
+      clear: both;
+      width: 100%;
+    }
+
+    #target{
+      font-family:'GraphicPixel';
+      color:#e3e3e3;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 140px;
+      margin-left: 0px;
+      padding: 4px;
+      background: rgba(45,45,45,0.8);
+      display: none;
+      border: 2px solid #000;
+      border-radius: 0 0 6px 0;
+    }
+    #target .headshot {
+      float: left;
+      height: 32px;
+      width: 32px;
+      border: 2px solid #000;
+      margin-right: 3px;
+      background: #FFF;
+      overflow: hidden;
+    }
+    #target .headshot div {
+      position: relative;
+      top: 50%;
+      left: 50%;
+    }
+    #target .details {
+      float: left;
+      margin-bottom: 8px;
+      width: 100px;
+      text-transform: capitalize;
+    }
+    #target .name {
+      float: left;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+    }
+    #target .health {
+      float: left;
+      height: 10px;
+      width: 100%;
+      background: red;
+      clear: left;
+    }
+
+    #inspector {
+      font-family:'GraphicPixel';
+      color:#e3e3e3;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 140px;
+      margin-left: -70px;
+      padding: 4px;
+      background: rgba(45,45,45,0.8);
+      display: none;
+      border-radius: 0 0 6px 6px;
+    }
+    #inspector .headshot {
+      float: left;
+      height: 32px;
+      width: 32px;
+      border: 2px solid #000;
+      margin-right: 3px;
+      background: #FFF;
+      overflow: hidden;
+    }
+    #inspector .headshot div {
+      position: relative;
+      top: 50%;
+      left: 50%;
+    }
+    #inspector .details {
+      float: left;
+      width: 100px;
+    }
+    #inspector .health {
+      float: left;
+      height: 10px;
+      width: 100%;
+      background: red;
+      clear: left;
+    }
+
     .bubble p {-moz-user-select:none;-webkit-user-select:none;}
     
     #instructions {position:absolute;top:50%;left:50%;z-index:1000;font-family:'GraphicPixel';pointer-events:none;opacity:0;-moz-transition:0.25s opacity linear;-webkit-transition:0.4s top ease, 0.4s opacity linear;-o-transition:0.4s top ease, 0.4s opacity linear;-ms-transition:0.4s top ease, 0.4s opacity linear;transition:0.4s top ease, 0.4s opacity linear;}
@@ -193,6 +300,61 @@ footer, header, hgroup, menu, nav, section {
     .achievement-sharing a {display:block;float:left;}
     
 	#bubbles a {pointer-events:auto;text-decoration:none;color:#fcda5c;}
+
+    #chatLog{
+      position: absolute;
+      top: 100%;
+      left: 1%;
+      width: 97%;
+      background: rgba(45,45,45,0.6);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      max-height: 15%;
+      border-radius: 0 3px 0 0;
+    }
+    #chatLog p{
+      margin-bottom: 3px;
+      padding: 0;
+      line-height: 1;
+      color: rgba(255,255,255,1);
+    }
+    #chatLog p .name{
+      font-weight: bold;
+    }
+
+    #expbar{
+      position: absolute;
+      bottom: 8.5%;
+      left: 98.6%;
+      width: 0.5%;
+      background: rgba(0,0,255,0.3);
+      height: 90%;
+      margin-left: 0px;
+      padding: 0px;
+      border: 0px;
+    }
+
+    #textWindow{
+      position: absolute;
+      top: 30%;
+      left: 5%;
+      width: 88%;
+      height: 50%;
+      background: rgba(0,0,0,0.7);
+      color: rgba(255, 255, 255, 1);
+      margin-left: 0px;
+      padding: 1%;
+      border: 0px;
+    }
+    #textWindow h1 {font-size:64px;}
+    #textWindow h2 {font-size:48px;}
+    #textWindow h3 {font-size:32px;}
+    #textWindow h4 {font-size:24px;}
+    #textWindow h5 {font-size:16px;text-indent:16px;}
+    #textWindow h6 {font-size:12px;text-indent:32px;}
+    #textWindow p {font-size:12px;text-indent:32px;margin:2px 2px;}
+    #textWindow td {color: rgba(255, 255, 255, 1);}
 
     #create-new span:hover, #cancel span:hover {cursor:pointer;color:#d83939;}
     #create-new span span {color:#b2af9b;}
@@ -613,7 +775,7 @@ footer, header, hgroup, menu, nav, section {
         .button.delete {background-position:-458px -102px;}
         .button.delete:active {background-position:0 -1452px;}
         
-		#container {width:980px;margin:0 auto;position:absolute;top:50%;margin-top:-252px;left:50%;margin-left:-490px;}
+		#container {width:980px;margin:0 auto;position:absolute;top:0%;margin-top:50px;left:50%;margin-left:-490px;}
 		#canvasborder {padding:10px;background:url('../img/2/border.png') no-repeat;}
 		#canvas {width:100%;height:448px;}
 		#fade {width:960px;height:448px;top:10px;left:10px;}

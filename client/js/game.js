@@ -1,10 +1,13 @@
 
-define(['infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
-        'warrior', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
-        'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', '../../shared/js/gametypes'],
+define(['infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite',
+        'tile', 'warrior', 'gameclient', 'audio', 'updater', 'transition',
+        'pathfinder', 'item', 'mob', 'npc', 'player', 'character', 'chest',
+        'mobs', 'exceptions', 'config', 'chathandler', 'textwindowhandler',
+        'menu', '../../shared/js/gametypes'],
 function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedTile,
          Warrior, GameClient, AudioManager, Updater, Transition, Pathfinder,
-         Item, Mob, Npc, Player, Character, Chest, Mobs, Exceptions, config) {
+         Item, Mob, Npc, Player, Character, Chest, Mobs, Exceptions, config,
+         ChatHandler, TextWindowHandler, Menu) {
     
     var Game = Class.extend({
         init: function(app) {
@@ -42,12 +45,30 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             this.targetColor = "rgba(255, 255, 255, 0.5)";
             this.targetCellVisible = true;
             this.hoveringTarget = false;
+            this.hoveringPlayer = false;
             this.hoveringMob = false;
             this.hoveringItem = false;
             this.hoveringCollidingTile = false;
+
+            // Global chats
+            this.chats = 0;
+            this.maxChats = 3;
+            this.globalChatColor = '#A6FFF9';
         
             // combat
             this.infoManager = new InfoManager(this);
+
+            // Chat commands
+            this.chathandler = new ChatHandler(this);
+
+            // TextWindow Handler
+            this.textWindowHandler = new TextWindowHandler();
+
+            // Menu
+            this.menu = new Menu();
+
+            // Item Info
+            this.itemInfoOn = true;
         
             // zoning
             this.currentZoning = null;
@@ -63,12 +84,37 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             this.debugPathing = false;
         
             // sprites
-            this.spriteNames = ["hand", "sword", "loot", "target", "talk", "sparks", "shadow16", "rat", "skeleton", "skeleton2", "spectre", "boss", "deathknight", 
+            this.spriteNames = ["hermitcrab", "zombie", "piratecaptain", "ironogre", "ogrelord", "adherer", "icegolem",
+                                "crystalscolpion", "eliminator", "firebenef", "taekwondo", "item-taekwondo",
+                                "darkogre",
+                                "frostqueen", "snowrabbit", "snowwolf", "iceknight", "miniiceknight", "snowelf", "whitebear", "cobra",
+                                "goldgolem", "darkregion", "darkregionillusion", "bloodregion",
+                                "justicehammer", "item-justicehammer", "firesword", "item-firesword", "whip", "item-whip",
+                                "forestguardiansword", "item-forestguardiansword",
+                                "gayarmor", "item-gayarmor", "schooluniform", "item-schooluniform", "beautifullife", "item-beautifullife",
+                                "regionarmor", "item-regionarmor", "ghostrider", "item-ghostrider",
+                                "desertscolpion", "darkscolpion", "vulture", "forestdragon",
+                                "bluewingarmor", "item-bluewingarmor", "thiefarmor", "item-thiefarmor", "ninjaarmor", "item-ninjaarmor",
+                                "dragonarmor", "item-dragonarmor", "fallenarmor", "item-fallenarmor", "paladinarmor", "item-paladinarmor", "crystalarmor", "item-crystalarmor", "adhererrobe", "item-adhererrobe", "frostarmor", "item-frostarmor",
+                                "redmetalsword", "item-redmetalsword", "bastardsword", "item-bastardsword", "halberd", "item-halberd", "rose", "item-rose", "icerose", "item-icerose",
+                                "hand", "sword", "loot", "target", "talk", "sparks", "shadow16", "rat", "skeleton", "skeleton2", "spectre", "boss", "deathknight", 
                                 "ogre", "crab", "snake", "eye", "bat", "goblin", "wizard", "guard", "king", "villagegirl", "villager", "coder", "agent", "rick", "scientist", "nyan", "priest", 
-                                "sorcerer", "octocat", "beachnpc", "forestnpc", "desertnpc", "lavanpc", "clotharmor", "leatherarmor", "mailarmor", 
+                                "sorcerer", "octocat", "beachnpc", "forestnpc", "desertnpc", "lavanpc", "clotharmor", "item-clotharmor", "leatherarmor", "mailarmor", 
                                 "platearmor", "redarmor", "goldenarmor", "firefox", "death", "sword1", "axe", "chest",
                                 "sword2", "redsword", "bluesword", "goldensword", "item-sword2", "item-axe", "item-redsword", "item-bluesword", "item-goldensword", "item-leatherarmor", "item-mailarmor", 
-                                "item-platearmor", "item-redarmor", "item-goldenarmor", "item-flask", "item-cake", "item-burger", "morningstar", "item-morningstar", "item-firepotion"];
+                                "item-platearmor", "item-redarmor", "item-goldenarmor", "item-flask", "item-cake", "item-burger", "morningstar", "item-morningstar", "item-firepotion",
+                                "orc", "oldogre", "golem", "mimic", "hobgoblin", "greenarmor", "greenwingarmor", "item-greenarmor", "item-greenwingarmor",
+                                "redmouse", "redguard", "scimitar", "item-scimitar", "redguardarmor", "item-redguardarmor", "whitearmor", "item-whitearmor",
+                                "infectedguard", "livingarmor", "mermaid", "trident", "item-trident", "ratarmor", "item-ratarmor",
+                                "yellowfish", "greenfish", "redfish", "clam", "preta", "pirateskeleton",
+                                "bluescimitar", "item-bluescimitar", "bluepiratearmor", "item-bluepiratearmor",
+                                "penguin", "moleking", "cheoliarmor", "item-cheoliarmor", "hammer", "item-hammer",
+                                "darkskeleton", "greenpirateskeleton", "blackpirateskeleton", "redpirateskeleton", "yellowpreta", "bluepreta", "miniknight", "wolf",
+                                "dovakinarmor", "item-dovakinarmor", "gbwingarmor", "item-gbwingarmor", "redwingarmor", "item-redwingarmor", "snowfoxarmor", "item-snowfoxarmor", "wolfarmor", "item-wolfarmor",
+                                "pinkelf", "greenlightsaber", "item-greenlightsaber",
+                                "skyelf", "skylightsaber", "item-skylightsaber",
+                                "redelf", "redlightsaber", "item-redlightsaber",
+                                "item-sidesword", "sidesword", "yellowmouse", "whitemouse", "brownmouse", "spear", "item-spear", "guardarmor", "item-guardarmor"];
         },
     
         setup: function($bubbleContainer, canvas, background, foreground, input) {
@@ -77,10 +123,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
     		this.setChatInput(input);
         },
         
-        setStorage: function(storage) {
-            this.storage = storage;
-        },
-    
         setRenderer: function(renderer) {
             this.renderer = renderer;
         },
@@ -114,12 +156,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         initPlayer: function() {
-            if(this.storage.hasAlreadyPlayed()) {
-                this.player.setSpriteName(this.storage.data.player.armor);
-                this.player.setWeaponName(this.storage.data.player.weapon);
-            }
-        
-        	this.player.setSprite(this.sprites[this.player.getSpriteName()]);
+            this.player.setSprite(this.sprites[this.player.getSpriteName()]);
         	this.player.idle();
         
     	    log.debug("Finished initPlayer");
@@ -145,6 +182,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         
             this.sparksAnimation = new Animation("idle_down", 6, 0, 16, 16);
             this.sparksAnimation.setSpeed(120);
+
+            this.benefAnimation = new Animation("idle_down", 5, 0, 48, 48);
+            this.benefAnimation.setSpeed(80);
         },
     
         initHurtSprites: function() {
@@ -164,155 +204,53 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             self.sprites["chest"].createSilhouette();
             self.sprites["item-cake"].createSilhouette();
         },
-    
-        initAchievements: function() {
+        initAchievements: function(achievementFound, achievementProgress){
             var self = this;
-        
+
             this.achievements = {
-                A_TRUE_WARRIOR: {
+                SAVE_PRINCESS: {
                     id: 1,
-                    name: "A True Warrior",
-                    desc: "Find a new weapon"
+                    name: "공주를 구하라.",
+                    desc: "공주를 구해오세요.",
+                    hidden: !achievementFound[0],
+                    completed: achievementProgress[0] === 999 ? true : false,
+                    isCompleted: function(){
+                        return this.completed;
+                    }
                 },
-                INTO_THE_WILD: {
+                KILL_RAT: {
                     id: 2,
-                    name: "Into the Wild",
-                    desc: "Venture outside the village"
+                    name: "쥐를 잡아라.",
+                    desc: "쥐 10마리를 잡으세요.",
+                    hidden: !achievementFound[1],
+                    completed: achievementProgress[1] === 999 ? true : false,
+                    isCompleted: function(){
+                        return this.completed;
+                    }
                 },
-                ANGRY_RATS: {
+                BRING_LEATHERARMOR: {
                     id: 3,
-                    name: "Angry Rats",
-                    desc: "Kill 10 rats",
-                    isCompleted: function() {
-                        return self.storage.getRatCount() >= 10;
+                    name: "가죽갑옷",
+                    desc: "Village에게 가죽갑옷을 구해주세요.",
+                    hidden: !achievementFound[2],
+                    completed: achievementProgress[2] === 999 ? true : false,
+                    isCompleted: function(){
+                        return this.completed;
                     }
-                },
-                SMALL_TALK: {
-                    id: 4,
-                    name: "Small Talk",
-                    desc: "Talk to a non-player character"
-                },
-                FAT_LOOT: {
-                    id: 5,
-                    name: "Fat Loot",
-                    desc: "Get a new armor set"
-                },
-                UNDERGROUND: {
-                    id: 6,
-                    name: "Underground",
-                    desc: "Explore at least one cave"
-                },
-                AT_WORLDS_END: {
-                    id: 7,
-                    name: "At World's End",
-                    desc: "Reach the south shore"
-                },
-                COWARD: {
-                    id: 8,
-                    name: "Coward",
-                    desc: "Successfully escape an enemy"
-                },
-                TOMB_RAIDER: {
-                    id: 9,
-                    name: "Tomb Raider",
-                    desc: "Find the graveyard"
-                },
-                SKULL_COLLECTOR: {
-                    id: 10,
-                    name: "Skull Collector",
-                    desc: "Kill 10 skeletons",
-                    isCompleted: function() {
-                        return self.storage.getSkeletonCount() >= 10;
-                    }
-                },
-                NINJA_LOOT: {
-                    id: 11,
-                    name: "Ninja Loot",
-                    desc: "Get hold of an item you didn't fight for"
-                },
-                NO_MANS_LAND: {
-                    id: 12,
-                    name: "No Man's Land",
-                    desc: "Travel through the desert"
-                },
-                HUNTER: {
-                    id: 13,
-                    name: "Hunter",
-                    desc: "Kill 50 enemies",
-                    isCompleted: function() {
-                        return self.storage.getTotalKills() >= 50;
-                    }
-                },
-                STILL_ALIVE: {
-                    id: 14,
-                    name: "Still Alive",
-                    desc: "Revive your character five times",
-                    isCompleted: function() {
-                        return self.storage.getTotalRevives() >= 5;
-                    }
-                },
-                MEATSHIELD: {
-                    id: 15,
-                    name: "Meatshield",
-                    desc: "Take 5,000 points of damage",
-                    isCompleted: function() {
-                        return self.storage.getTotalDamageTaken() >= 5000;
-                    }
-                },
-                HOT_SPOT: {
-                    id: 16,
-                    name: "Hot Spot",
-                    desc: "Enter the volcanic mountains"
-                },
-                HERO: {
-                    id: 17,
-                    name: "Hero",
-                    desc: "Defeat the final boss"
-                },
-                FOXY: {
-                    id: 18,
-                    name: "Foxy",
-                    desc: "Find the Firefox costume",
-                    hidden: true
-                },
-                FOR_SCIENCE: {
-                    id: 19,
-                    name: "For Science",
-                    desc: "Enter into a portal",
-                    hidden: true
-                },
-                RICKROLLD: {
-                    id: 20,
-                    name: "Rickroll'd",
-                    desc: "Take some singing lessons",
-                    hidden: true
                 }
             };
-        
-            _.each(this.achievements, function(obj) {
-                if(!obj.isCompleted) {
+
+            _.each(this.achievements, function(obj){
+                if(!obj.isCompleted){
                     obj.isCompleted = function() { return true; }
                 }
-                if(!obj.hidden) {
+                if(!obj.hidden){
                     obj.hidden = false;
                 }
             });
-        
+
             this.app.initAchievementList(this.achievements);
-        
-            if(this.storage.hasAlreadyPlayed()) {
-                this.app.initUnlockedAchievements(this.storage.data.achievements.unlocked);
-            }
-        },
-    
-        getAchievementById: function(id) {
-            var found = null;
-            _.each(this.achievements, function(achievement, key) {
-                if(achievement.id === parseInt(id)) {
-                    found = achievement;
-                }
-            });
-            return found;
+            this.app.initUnlockedAchievements(this.achievements);
         },
     
         loadSprite: function(name) {
@@ -377,24 +315,28 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 this.targetColor = "rgba(255, 255, 255, 0.5)";
             }
         
-            if(this.hoveringMob && this.started) {
+            if(this.hoveringPlayer && this.started) {
                 this.setCursor("sword");
                 this.hoveringTarget = false;
+                this.hoveringMob = false;
                 this.targetCellVisible = false;
-            }
-            else if(this.hoveringNpc && this.started) {
+            } else if(this.hoveringMob && this.started) {
+                this.setCursor("sword");
+                this.hoveringTarget = false;
+                this.hoveringPlayer = false;
+                this.targetCellVisible = false;
+            } else if(this.hoveringNpc && this.started) {
                 this.setCursor("talk");
                 this.hoveringTarget = false;
                 this.targetCellVisible = false;
-            }
-            else if((this.hoveringItem || this.hoveringChest) && this.started) {
+            } else if((this.hoveringItem || this.hoveringChest) && this.started) {
                 this.setCursor("loot");
                 this.hoveringTarget = false;
                 this.targetCellVisible = true;
-            }
-            else {
+            } else {
                 this.setCursor("hand");
                 this.hoveringTarget = false;
+                this.hoveringPlayer = false;
                 this.targetCellVisible = true;
             }
         },
@@ -609,10 +551,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             }
         },
     
-        setServerOptions: function(host, port, username) {
+        setServerOptions: function(host, port, username, userpw, email) {
             this.host = host;
             this.port = port;
             this.username = username;
+            this.userpw = userpw;
+            this.email = email;
         },
     
         loadAudio: function() {
@@ -643,7 +587,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     self.loadAudio();
                     
                     self.initMusicAreas();
-                    self.initAchievements();
                     self.initCursors();
                     self.initAnimations();
                     self.initShadows();
@@ -715,6 +658,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 connecting = false; // always in dispatcher mode in the build version
     
             this.client = new GameClient(this.host, this.port);
+            this.client.wrongpw_callback = function(){
+                self.textWindowHandler.setHtml("<center><h1>Wrong Password</h1></center>");
+            };
+            this.client.ban_callback = function(){
+                self.textWindowHandler.setHtml("<center><h1>Ban</h1></center>");
+            };
             
             //>>excludeStart("prodHost", pragmas.prodHost);
             var config = this.app.config.local || this.app.config.dev;
@@ -742,6 +691,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 log.info("Starting client/server handshake");
                 
                 self.player.name = self.username;
+                self.player.pw = self.userpw;
+                self.player.email = self.email;
                 self.started = true;
             
                 self.sendHello(self.player);
@@ -765,7 +716,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 }
             });
         
-            this.client.onWelcome(function(id, name, x, y, hp) {
+            this.client.onWelcome(function(id, name, x, y, hp, armor, weapon, experience, avatar, inventory0, inventory1, achievementFound, achievementProgress) {
                 log.info("Received player ID from server : "+ id);
                 self.player.id = id;
                 self.playerId = id;
@@ -774,8 +725,18 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.player.name = name;
                 self.player.setGridPosition(x, y);
                 self.player.setMaxHitPoints(hp);
+                self.player.setArmorName(armor);
+                self.player.setSpriteName(avatar);
+                self.player.setWeaponName(weapon);
+                self.player.setInventory(Types.getKindFromString(inventory0), 0);
+                self.player.setInventory(Types.getKindFromString(inventory1), 1);
+                self.initAchievements(achievementFound, achievementProgress);
+                self.initPlayer();
+                self.player.experience = experience;
+                self.player.level = Types.getLevel(experience);
             
                 self.updateBars();
+                self.updateExpBar();
                 self.resetCamera();
                 self.updatePlateauMode();
                 self.audioManager.updateMusic();
@@ -783,20 +744,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.addEntity(self.player);
                 self.player.dirtyRect = self.renderer.getEntityBoundingRect(self.player);
 
-                setTimeout(function() {
-                    self.tryUnlockingAchievement("STILL_ALIVE");
-                }, 1500);
-            
-                if(!self.storage.hasAlreadyPlayed()) {
-                    self.storage.initPlayer(self.player.name);
-                    self.storage.savePlayer(self.renderer.getPlayerImage(),
-                                            self.player.getSpriteName(),
-                                            self.player.getWeaponName());
-                    self.showNotification("Welcome to BrowserQuest!");
-                } else {
-                    self.showNotification("Welcome back to BrowserQuest!");
-                    self.storage.setPlayerName(name);
-                }
+                self.showNotification("안생겨요에 오신 것을 환영합니다.");
         
                 self.player.onStartPathing(function(path) {
                     var i = path.length - 1,
@@ -860,29 +808,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         if(attacker.isAdjacent(attacker.target)) {
                             attacker.lookAtTarget();
                         } else {
-                            attacker.follow(self.player);
+//                            attacker.follow(self.player);
                         }
                     });
-                
-                    if((self.player.gridX <= 85 && self.player.gridY <= 179 && self.player.gridY > 178) || (self.player.gridX <= 85 && self.player.gridY <= 266 && self.player.gridY > 265)) {
-                        self.tryUnlockingAchievement("INTO_THE_WILD");
-                    }
-                    
-                    if(self.player.gridX <= 85 && self.player.gridY <= 293 && self.player.gridY > 292) {
-                        self.tryUnlockingAchievement("AT_WORLDS_END");
-                    }
-                    
-                    if(self.player.gridX <= 85 && self.player.gridY <= 100 && self.player.gridY > 99) {
-                        self.tryUnlockingAchievement("NO_MANS_LAND");
-                    }
-                    
-                    if(self.player.gridX <= 85 && self.player.gridY <= 51 && self.player.gridY > 50) {
-                        self.tryUnlockingAchievement("HOT_SPOT");
-                    }
-                    
-                    if(self.player.gridX <= 27 && self.player.gridY <= 123 && self.player.gridY > 112) {
-                        self.tryUnlockingAchievement("TOMB_RAIDER");
-                    }
                 
                     self.updatePlayerCheckpoint();
                 
@@ -907,20 +835,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                             self.removeItem(item);
                             self.showNotification(item.getLootMessage());
                         
-                            if(item.type === "armor") {
-                                self.tryUnlockingAchievement("FAT_LOOT");
-                            }
-                            
-                            if(item.type === "weapon") {
-                                self.tryUnlockingAchievement("A_TRUE_WARRIOR");
-                            }
-
-                            if(item.kind === Types.Entities.CAKE) {
-                                self.tryUnlockingAchievement("FOR_SCIENCE");
-                            }
-                            
                             if(item.kind === Types.Entities.FIREPOTION) {
-                                self.tryUnlockingAchievement("FOXY");
                                 self.audioManager.playSound("firefox");
                             }
                         
@@ -928,10 +843,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                                 self.audioManager.playSound("heal");
                             } else {
                                 self.audioManager.playSound("loot");
-                            }
-                            
-                            if(item.wasDropped && !_(item.playersInvolved).include(self.playerId)) {
-                                self.tryUnlockingAchievement("NINJA_LOOT");
                             }
                         } catch(e) {
                             if(e instanceof Exceptions.LootException) {
@@ -945,6 +856,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 
                     if(!self.player.hasTarget() && self.map.isDoor(x, y)) {
                         var dest = self.map.getDoorDestination(x, y);
+
+                        if(dest.level > self.player.level){
+                            self.unregisterEntityPosition(self.player);
+                            self.registerEntityPosition(self.player);
+                            return;
+                        }
                     
                         self.player.setGridPosition(dest.x, dest.y);
                         self.player.nextGridX = dest.x;
@@ -964,9 +881,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                             }
                         }
                         
-                        if(_.size(self.player.attackers) > 0) {
-                            setTimeout(function() { self.tryUnlockingAchievement("COWARD"); }, 500);
-                        }
                         self.player.forEachAttacker(function(attacker) {
                             attacker.disengage();
                             attacker.idle();
@@ -974,9 +888,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     
                         self.updatePlateauMode();
                         
-                        self.checkUndergroundAchievement();
-                        
-                        if(self.renderer.mobile || self.renderer.tablet) {
+                        if(self.renderer.mobile || self.renderer.tablet){ 
                             // When rendering with dirty rects, clear the whole screen when entering a door.
                             self.renderer.clearScreen(self.renderer.context);
                         }
@@ -998,7 +910,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     }
                     
                     self.player.forEachAttacker(function(attacker) {
-                        if(!attacker.isAdjacentNonDiagonal(self.player)) {
+                        if(!attacker.isAdjacentNonDiagonal(self.player) && attacker instanceof Mob) {
                             attacker.follow(self.player);
                         }
                     });
@@ -1047,15 +959,16 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.player.onHasMoved(function(player) {
                     self.assignBubbleTo(player);
                 });
-                
-                self.player.onArmorLoot(function(armorName) {
-                    self.player.switchArmor(self.sprites[armorName]);
+                self.client.onPVPChange(function(pvpFlag){
+                    self.player.flagPVP(pvpFlag);
+                    if(pvpFlag){
+                        self.showNotification("PK 허용 지역에 들어오셨습니다.");
+                    } else{
+                        self.showNotification("PK 금지 지역에 들어오셨습니다.");
+                    }
                 });
-            
+                
                 self.player.onSwitchItem(function() {
-                    self.storage.savePlayer(self.renderer.getPlayerImage(),
-                                            self.player.getArmorName(),
-                                            self.player.getWeaponName());
                     if(self.equipment_callback) {
                         self.equipment_callback();
                     }
@@ -1063,7 +976,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 
                 self.player.onInvincible(function() {
                     self.invincible_callback();
-                    self.player.switchArmor(self.sprites["firefox"]);
                 });
             
                 self.client.onSpawnItem(function(item, x, y) {
@@ -1276,9 +1188,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         entity = self.getEntityById(id);
                 
                         if(entity) {
-                            if(self.player.isAttackedBy(entity)) {
-                                self.tryUnlockingAchievement("COWARD");
-                            }
                             entity.disengage();
                             entity.idle();
                             self.makeCharacterGoTo(entity, x, y);
@@ -1328,54 +1237,23 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     }
                 });
             
-                self.client.onPlayerDamageMob(function(mobId, points) {
+                self.client.onPlayerDamageMob(function(mobId, points, healthPoints, maxHp) {
                     var mob = self.getEntityById(mobId);
                     if(mob && points) {
                         self.infoManager.addDamageInfo(points, mob.x, mob.y - 15, "inflicted");
                     }
+                    if(self.player.hasTarget()){
+                        self.updateTarget(mobId, points, healthPoints, maxHp);
+                    }
                 });
             
-                self.client.onPlayerKillMob(function(kind) {
-                    var mobName = Types.getKindAsString(kind);
+                self.client.onPlayerKillMob(function(kind, level, exp) {
+                    var mobExp = Types.getMobExp(kind);
+                    self.player.level = level;
+                    self.player.experience = exp;
+                    self.updateExpBar();
                     
-                    if(mobName === 'skeleton2') {
-                        mobName = 'greater skeleton';
-                    }
-                    
-                    if(mobName === 'eye') {
-                        mobName = 'evil eye';
-                    }
-                    
-                    if(mobName === 'deathknight') {
-                        mobName = 'death knight';
-                    }
-                    
-                    if(mobName === 'boss') {
-                        self.showNotification("You killed the skeleton king");
-                    } else {
-                        if(_.include(['a', 'e', 'i', 'o', 'u'], mobName[0])) {
-                            self.showNotification("You killed an " + mobName);
-                        } else {
-                            self.showNotification("You killed a " + mobName);
-                        }
-                    }
-                    
-                    self.storage.incrementTotalKills();
-                    self.tryUnlockingAchievement("HUNTER");
-
-                    if(kind === Types.Entities.RAT) {
-                        self.storage.incrementRatCount();
-                        self.tryUnlockingAchievement("ANGRY_RATS");
-                    }
-                    
-                    if(kind === Types.Entities.SKELETON || kind === Types.Entities.SKELETON2) {
-                        self.storage.incrementSkeletonCount();
-                        self.tryUnlockingAchievement("SKULL_COLLECTOR");
-                    }
-
-                    if(kind === Types.Entities.BOSS) {
-                        self.tryUnlockingAchievement("HERO");
-                    }
+                    self.infoManager.addDamageInfo("+"+mobExp+" exp", self.player.x, self.player.y - 15, "exp", 3000);
                 });
             
                 self.client.onPlayerChangeHealth(function(points, isRegen) {
@@ -1395,8 +1273,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                             player.hurt();
                             self.infoManager.addDamageInfo(diff, player.x, player.y - 15, "received");
                             self.audioManager.playSound("hurt");
-                            self.storage.addDamage(-diff);
-                            self.tryUnlockingAchievement("MEATSHIELD");
                             if(self.playerhurt_callback) {
                                 self.playerhurt_callback();
                             }
@@ -1422,6 +1298,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                             player.setSprite(self.sprites[itemName]);
                         } else if(Types.isWeapon(itemKind)) {
                             player.setWeaponName(itemName);
+                        } else if(Types.isBenef(itemKind)){
+                            player.setBenef(itemKind);
                         }
                     }
                 });
@@ -1458,9 +1336,11 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 });
             
                 self.client.onChatMessage(function(entityId, message) {
-                    var entity = self.getEntityById(entityId);
-                    self.createBubble(entityId, message);
-                    self.assignBubbleTo(entity);
+                    if(!self.chathandler.processReceiveMessage(entityId, message)){
+                        var entity = self.getEntityById(entityId);
+                        self.createBubble(entityId, message);
+                        self.assignBubbleTo(entity);
+                    }
                     self.audioManager.playSound("chat");
                 });
             
@@ -1476,6 +1356,33 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     }
                     if(self.disconnect_callback) {
                         self.disconnect_callback(message);
+                    }
+                });
+
+                self.client.onAchievement(function(id, type){
+                    var achievement = null;
+
+                    if(type === "complete" && id === 2){
+                        achievement = self.achievements['KILL_RAT'];
+                        achievement.completed = true;
+                        self.app.displayUnlockedAchievement(achievement);
+                        self.app.showAchievementNotification(achievement.id, achievement.name, "퀘스트 완료!");
+                        setTimeout(function() {
+                            self.infoManager.addDamageInfo("+50 exp", self.player.x, self.player.y - 15, "exp", 3000);
+                        }, 1000);
+                    } else if(type === "complete" && id === 3){
+                        achievement = self.achievements['BRING_LEATHERARMOR'];
+                        achievement.completed = true;
+                        self.app.displayUnlockedAchievement(achievement);
+                        self.app.showAchievementNotification(achievement.id, achievement.name, "퀘스트 완료!");
+                        if(self.player.inventory[0] === Types.Entities.LEATHERARMOR){
+                            self.player.inventory[0] = null;
+                        } else if(self.player.inventory[1] === Types.Entities.LEATHERARMOR){
+                            self.player.inventory[1] = null;
+                        }
+                        setTimeout(function() {
+                            self.infoManager.addDamageInfo("+50 exp", self.player.x, self.player.y - 15, "exp", 3000);
+                        }, 1000);
                     }
                 });
             
@@ -1612,6 +1519,15 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             var msg;
         
             if(npc) {
+                if(npc.kind == Types.Entities.VILLAGEGIRL && this.achievements['KILL_RAT'].hidden){
+                    this.unhiddenAchievement(this.achievements['KILL_RAT']);
+                } else if(npc.kind === Types.Entities.KING && this.achievements['SAVE_PRINCESS'].hidden){
+                    this.unhiddenAchievement(this.achievements['SAVE_PRINCESS']);
+                } else if(npc.kind === Types.Entities.VILLAGER && this.achievements['BRING_LEATHERARMOR'].hidden) {
+                    this.unhiddenAchievement(this.achievements['BRING_LEATHERARMOR']);
+                } else if(npc.kind === Types.Entities.VILLAGER && !this.achievements['BRING_LEATHERARMOR'].hidden) {
+                    this.client.sendTalkToNPC(npc.kind);
+                }
                 msg = npc.talk();
                 this.previousClickPosition = {};
                 if(msg) {
@@ -1622,11 +1538,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     this.destroyBubble(npc.id);
                     this.audioManager.playSound("npc-end");
                 }
-                this.tryUnlockingAchievement("SMALL_TALK");
-                
-                if(npc.kind === Types.Entities.RICK) {
-                    this.tryUnlockingAchievement("RICKROLLD");
-                }
+            }
+        },
+        unhiddenAchievement: function(achievement){
+            if(achievement.hidden){
+                this.app.displayUnhiddenAchievement(achievement);
+                achievement.hidden = false;
             }
         },
 
@@ -1747,6 +1664,13 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             }
             return null;
         },
+        getPlayerAt: function(x, y) {
+            var entity = this.getEntityAt(x, y);
+            if(entity && (entity instanceof Player) && (entity !== this.player) && this.player.pvpFlag) {
+                return entity;
+            }
+            return null;
+        },
 
         getNpcAt: function(x, y) {
             var entity = this.getEntityAt(x, y);
@@ -1797,6 +1721,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
 
         isMobAt: function(x, y) {
             return !_.isNull(this.getMobAt(x, y));
+        },
+        isPlayerAt: function(x, y) {
+            return !_.isNull(this.getPlayerAt(x, y));
         },
 
         isItemAt: function(x, y) {
@@ -1877,19 +1804,22 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 this.hoveringCollidingTile = this.map.isColliding(x, y);
                 this.hoveringPlateauTile = this.player.isOnPlateau ? !this.map.isPlateau(x, y) : this.map.isPlateau(x, y);
                 this.hoveringMob = this.isMobAt(x, y);
+                this.hoveringPlayer = this.isPlayerAt(x, y);
                 this.hoveringItem = this.isItemAt(x, y);
                 this.hoveringNpc = this.isNpcAt(x, y);
                 this.hoveringChest = this.isChestAt(x, y);
         
-                if(this.hoveringMob || this.hoveringNpc || this.hoveringChest) {
+                if(this.hoveringMob || this.hoveringPlayer || this.hoveringNpc || this.hoveringChest) {
                     var entity = this.getEntityAt(x, y);
+
+                    this.player.showTarget(entity);
             
                     if(!entity.isHighlighted && this.renderer.supportsSilhouettes) {
                         if(this.lastHovered) {
                             this.lastHovered.setHighlight(false);
                         }
                         this.lastHovered = entity;
-                        entity.setHighlight(true);
+                        entity.setHighlight(false);
                     }
                 }
                 else if(this.lastHovered) {
@@ -1905,6 +1835,64 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         click: function() {
             var pos = this.getMouseGridPosition(),
                 entity;
+
+            if(this.textWindowHandler.textWindowOn){
+                this.textWindowHandler.close();
+                this.closeItemInfo();
+            }
+
+            if(pos.x === this.camera.gridX+this.camera.gridW-2
+            && pos.y === this.camera.gridY+this.camera.gridH-1){
+                if(this.player.inventory[0]){
+                    this.menu.clickInventory0();
+                }
+                return;
+            } else if(pos.x === this.camera.gridX+this.camera.gridW-1
+                   && pos.y === this.camera.gridY+this.camera.gridH-1){
+                if(this.player.inventory[1]){
+                    this.menu.clickInventory1();
+                }
+                return;
+            } else if(this.menu.inventoryOn){
+                var inventoryNumber;
+
+                if(this.menu.inventoryOn === "inventory0"){
+                    inventoryNumber = 0;
+                } else if(this.menu.inventoryOn === "inventory1"){
+                    inventoryNumber = 1;
+                } else{
+                    return;
+                }
+                if((pos.x === this.camera.gridX+this.camera.gridW-2
+                 || pos.x === this.camera.gridX+this.camera.gridW-1)
+                && pos.y == this.camera.gridY + this.camera.gridH-4){
+                    this.client.sendInventory("armor", inventoryNumber);
+                    this.player.equipFromInventory("armor", inventoryNumber, this.sprites);
+                    if(this.equipment_callback) {
+                        this.equipment_callback();
+                    }
+                    this.menu.close();
+                    return;
+                } else if((pos.x === this.camera.gridX+this.camera.gridW-2
+                        || pos.x === this.camera.gridX+this.camera.gridW-1)
+                       && pos.y == this.camera.gridY + this.camera.gridH-3){
+                    this.client.sendInventory("avatar", inventoryNumber);
+                    this.player.equipFromInventory("avatar", inventoryNumber, this.sprites);
+                    this.menu.close();
+                    return;
+                } else if((pos.x === this.camera.gridX+this.camera.gridW-2
+                        || pos.x === this.camera.gridX+this.camera.gridW-1)
+                       && pos.y == this.camera.gridY + this.camera.gridH-2){
+                    this.client.sendInventory("empty", inventoryNumber);
+                    this.player.makeEmptyInventory(inventoryNumber);
+                    this.menu.close();
+                    return;
+                } else{
+                    this.menu.close();
+                }
+            } else{
+                this.menu.close();
+            }
             
             if(pos.x === this.previousClickPosition.x
             && pos.y === this.previousClickPosition.y) {
@@ -1922,7 +1910,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
     	    && !this.hoveringPlateauTile) {
         	    entity = this.getEntityAt(pos.x, pos.y);
     	    
-        	    if(entity instanceof Mob) {
+        	    if(entity instanceof Mob || (entity instanceof Player && entity !== this.player && this.player.pvpFlag)) {
         	        this.makePlayerAttack(entity);
         	    }
         	    else if(entity instanceof Item) {
@@ -1977,16 +1965,15 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             if(attacker && target && target instanceof Player) {
                 if(!target.isMoving() && attacker.getDistanceToEntity(target) === 0) {
                     var pos;
-                    
-                    switch(target.orientation) {
-                        case Types.Orientations.UP:
-                            pos = {x: target.gridX, y: target.gridY - 1, o: target.orientation}; break;
-                        case Types.Orientations.DOWN:
-                            pos = {x: target.gridX, y: target.gridY + 1, o: target.orientation}; break;
-                        case Types.Orientations.LEFT:
-                            pos = {x: target.gridX - 1, y: target.gridY, o: target.orientation}; break;
-                        case Types.Orientations.RIGHT:
-                            pos = {x: target.gridX + 1, y: target.gridY, o: target.orientation}; break;
+
+                    if(!this.map.isColliding(target.gridX, target.gridY - 1)){
+                        pos = {x: target.gridX, y: target.gridY - 1, o: target.orientation};
+                    } else if(!this.map.isColliding(target.gridX, target.gridY + 1)){
+                        pos = {x: target.gridX, y: target.gridY + 1, o: target.orientation};
+                    } else if(!this.map.isColliding(target.gridX - 1, target.gridY)){
+                        pos = {x: target.gridX - 1, y: target.gridY, o: target.orientation};
+                    } else if(!this.map.isColliding(target.gridX + 1, target.gridY)){
+                        pos = {x: target.gridX + 1, y: target.gridY, o: target.orientation};
                     }
                     
                     if(pos) {
@@ -2041,7 +2028,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 }
             }
         
-            if(character.isAttacking() && !character.previousTarget) {
+            if(character.isAttacking() && (!character.previousTarget || character.id === this.playerId)) {
                 var isMoving = this.tryMovingToADifferentTile(character); // Don't let multiple mobs stack on the same tile when attacking a player.
                 
                 if(character.canAttack(time)) {
@@ -2069,7 +2056,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     && character.isDiagonallyAdjacent(character.target)
                     && character.target instanceof Player
                     && !character.target.isMoving()) {
-                        character.follow(character.target);
+//                        character.follow(character.target);
                     }
                 }
             }
@@ -2185,7 +2172,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         say: function(message) {
-            this.client.sendChat(message);
+            if(!this.chathandler.processSendMessage(message)){
+                this.client.sendChat(message);
+            }
         },
     
         createBubble: function(id, message) {
@@ -2195,7 +2184,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         destroyBubble: function(id) {
             this.bubbleManager.destroyBubble(id);
         },
-    
+
         assignBubbleTo: function(character) {
             var bubble = this.bubbleManager.getBubbleById(character.id);
         
@@ -2238,14 +2227,15 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             this.initRenderingGrid();
 
             this.player = new Warrior("player", this.username);
+            this.player.pw = this.userpw;
+            this.player.email = this.email;
             this.initPlayer();
+            this.app.initTargetHud();
         
             this.started = true;
             this.client.enable();
             this.sendHello(this.player);
         
-            this.storage.incrementRevives();
-            
             if(this.renderer.mobile || this.renderer.tablet) {
                 this.renderer.clearScreen(this.renderer.context);
             }
@@ -2263,6 +2253,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
     
         onPlayerDeath: function(callback) {
             this.playerdeath_callback = callback;
+        },
+        onUpdateTarget: function(callback){
+            this.updatetarget_callback = callback;
+        },
+        onPlayerExpChange: function(callback){
+            this.playerexp_callback = callback;
         },
     
         onPlayerHealthChange: function(callback) {
@@ -2307,6 +2303,23 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 this.playerhp_callback(this.player.hitPoints, this.player.maxHitPoints);
             }
         },
+        updateExpBar: function(){
+            if(this.player && this.playerexp_callback){
+                var expInThisLevel = this.player.experience - Types.expForLevel[this.player.level-1];
+                var expForLevelUp = Types.expForLevel[this.player.level] - Types.expForLevel[this.player.level-1];
+                this.playerexp_callback(expInThisLevel, expForLevelUp);
+            }
+        },
+        updateTarget: function(targetId, points, healthPoints, maxHp){
+            if(this.player.hasTarget() && this.updatetarget_callback){
+                var target = this.getEntityById(targetId);
+                target.name = Types.getKindAsString(target.kind);
+                target.points = points;
+                target.healthPoints = healthPoints;
+                target.maxHp = maxHp;
+                this.updatetarget_callback(target);
+            }
+        },
     
         getDeadMobPosition: function(mobId) {
             var position;
@@ -2317,24 +2330,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             }
         
             return position;
-        },
-    
-        onAchievementUnlock: function(callback) {
-            this.unlock_callback = callback;
-        },
-    
-        tryUnlockingAchievement: function(name) {
-            var achievement = null;
-            if(name in this.achievements) {
-                achievement = this.achievements[name];
-            
-                if(achievement.isCompleted() && this.storage.unlockAchievement(achievement.id)) {
-                    if(this.unlock_callback) {
-                        this.unlock_callback(achievement.id, achievement.name, achievement.desc);
-                        this.audioManager.playSound("achievement");
-                    }
-                }
-            }
         },
     
         showNotification: function(message) {
@@ -2392,16 +2387,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             }
         },
         
-        checkUndergroundAchievement: function() {
-            var music = this.audioManager.getSurroundingMusic(this.player);
-
-            if(music) {
-                if(music.name === 'cave') {
-                    this.tryUnlockingAchievement("UNDERGROUND");
-                }
-            }
-        },
-        
         forEachEntityAround: function(x, y, r, callback) {
             for(var i = x-r, max_i = x+r; i <= max_i; i += 1) {
                 for(var j = y-r, max_j = y+r; j <= max_j; j += 1) {
@@ -2447,6 +2432,20 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     this.renderer.targetRect = targetRect;
                 }
             }
+        },
+        keyDown: function(key){
+            if(key === 49){ // 1
+            }
+        },
+        toggleItemInfo: function(){
+            if(this.itemInfoOn){
+                this.itemInfoOn = false;
+            } else{
+                this.itemInfoOn = true;
+            }
+        },
+        closeItemInfo: function (){
+            this.itemInfoOn = false;
         }
     });
     

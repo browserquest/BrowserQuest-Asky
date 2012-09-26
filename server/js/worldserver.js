@@ -60,7 +60,7 @@ module.exports = World = cls.Class.extend({
         });
         
         this.onPlayerEnter(function(player) {
-            log.info(player.name + " has joined "+ self.id);
+            log.info(player.name + "(" + player.connection._connection.remoteAddress + ") has joined "+ self.id);
             
             if(!player.hasEnteredGame) {
                 self.incrementPlayerCount();
@@ -72,8 +72,14 @@ module.exports = World = cls.Class.extend({
     
             var move_callback = function(x, y) {
                 log.debug(player.name + " is moving to (" + x + ", " + y + ").");
-                
+               
+                var isPVP = self.map.isPVP(x, y);
+                player.flagPVP(isPVP); 
                 player.forEachAttacker(function(mob) {
+                    if(mob.target === null){
+                        player.removeAttacker(mob);
+                        return;
+                    }
                     var target = self.getEntityById(mob.target);
                     if(target) {
                         var pos = self.findPositionNextTo(mob, target);
@@ -361,6 +367,15 @@ module.exports = World = cls.Class.extend({
         delete this.players[player.id];
         delete this.outgoingQueues[player.id];
     },
+    loggedInPlayer: function(name){
+        for(var id in this.players) {
+            if(this.players[id].name === name){
+                if(!this.players[id].isDead)
+                    return true;
+            }
+        }
+        return false;
+    },
     
     addMob: function(mob) {
         this.addEntity(mob);
@@ -466,7 +481,7 @@ module.exports = World = cls.Class.extend({
         var mob = this.getEntityById(mobId),
             player = this.getEntityById(playerId),
             mostHated;
-        
+
         if(player && mob) {
             mob.increaseHateFor(playerId, hatePoints);
             player.addHater(mob);
@@ -533,7 +548,7 @@ module.exports = World = cls.Class.extend({
         
         if(entity.type === 'mob') {
             // Let the mob's attacker (player) know how much damage was inflicted
-            this.pushToPlayer(attacker, new Messages.Damage(entity, damage));
+            this.pushToPlayer(attacker, new Messages.Damage(entity, damage, entity.hitPoints, entity.maxHitPoints));
         }
 
         // If the entity is about to die
@@ -542,7 +557,8 @@ module.exports = World = cls.Class.extend({
                 var mob = entity,
                     item = this.getDroppedItem(mob);
 
-                this.pushToPlayer(attacker, new Messages.Kill(mob));
+                attacker.incExp(Types.getMobExp(mob.kind));
+                this.pushToPlayer(attacker, new Messages.Kill(mob, attacker.level, attacker.experience));
                 this.pushToAdjacentGroups(mob.group, mob.despawn()); // Despawn must be enqueued before the item drop
                 if(item) {
                     this.pushToAdjacentGroups(mob.group, mob.drop(item));
@@ -665,7 +681,7 @@ module.exports = World = cls.Class.extend({
     findPositionNextTo: function(entity, target) {
         var valid = false,
             pos;
-        
+ 
         while(!valid) {
             pos = entity.getPositionNextTo(target);
             valid = this.isValidPosition(pos.x, pos.y);
@@ -852,5 +868,13 @@ module.exports = World = cls.Class.extend({
     
     updatePopulation: function(totalPlayers) {
         this.pushBroadcast(new Messages.Population(this.playerCount, totalPlayers ? totalPlayers : this.playerCount));
+    },
+    getPlayerByName: function(name){
+        for(var id in this.players) {
+            if(this.players[id].name === name){
+                return this.players[id];
+            }
+        }
+        return null;
     }
 });

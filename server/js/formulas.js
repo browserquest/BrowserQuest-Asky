@@ -1,12 +1,13 @@
 
-var Utils = require("./utils");
+var Utils = require("./utils"),
+    Types = require("../../shared/js/gametypes");
 
 var Formulas = {};
 
-Formulas.dmg = function(weaponLevel, armorLevel) {
-    var dealt = weaponLevel * Utils.randomInt(5, 10),
-        absorbed = armorLevel * Utils.randomInt(1, 3),
-        dmg =  dealt - absorbed;
+Formulas.dmg = function(weaponLevel, attackerLevel, armorLevel, defenderLevel) {
+    var dealt = (weaponLevel*0.9+attackerLevel*0.65) * Utils.randomInt(6, 9),
+        absorbed = (armorLevel*0.9+defenderLevel*0.65) * 2,
+        dmg =  Math.floor(dealt - absorbed);
     
     //console.log("abs: "+absorbed+"   dealt: "+ dealt+"   dmg: "+ (dealt - absorbed));
     if(dmg <= 0) {
@@ -16,8 +17,8 @@ Formulas.dmg = function(weaponLevel, armorLevel) {
     }
 };
 
-Formulas.hp = function(armorLevel) {
-    var hp = 80 + ((armorLevel - 1) * 30);
+Formulas.hp = function(armorLevel, entityLevel) {
+    var hp = 80 + ((armorLevel + entityLevel) * 15);
     return hp;
 };
 

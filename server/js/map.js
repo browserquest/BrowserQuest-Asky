@@ -4,6 +4,7 @@ var cls = require('./lib/class')
     fs = require('fs'),
     _ = require('underscore'),
     Utils = require('./utils'),
+    Area = require('./area'),
     Checkpoint = require('./checkpoint');
 
 module.exports = Map = cls.Class.extend({    
@@ -44,6 +45,7 @@ module.exports = Map = cls.Class.extend({
     
         this.initConnectedGroups(map.doors);
         this.initCheckpoints(map.checkpoints);
+        this.initPVPAreas(map.pvpAreas);
     
         if(this.ready_func) {
             this.ready_func();
@@ -105,6 +107,17 @@ module.exports = Map = cls.Class.extend({
             return false;
         }
         return this.grid[y][x] === 1;
+    },
+    isPVP: function(x,y){
+        var area = null;
+        area = _.detect(this.pvpAreas, function(area){
+            return area.contains(x,y);
+        });
+        if(area){
+            return true;
+        } else{
+            return false;
+        }
     },
     
     GroupIdToGroupPosition: function(id) {
@@ -206,6 +219,15 @@ module.exports = Map = cls.Class.extend({
             area = this.startingAreas[i];
         
         return area.getRandomPosition();
+    },
+    initPVPAreas: function(pvpList){
+        var self = this;
+
+        this.pvpAreas = [];
+        _.each(pvpList, function(pvp){
+            var pvpArea = new Area(pvp.id, pvp.x, pvp.y, pvp.w, pvp.h, null);
+            self.pvpAreas.push(pvpArea);
+        });
     }
 });
 

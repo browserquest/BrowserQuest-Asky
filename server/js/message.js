@@ -144,14 +144,18 @@ Messages.Teleport = Message.extend({
 });
 
 Messages.Damage = Message.extend({
-    init: function(entity, points) {
+    init: function(entity, points, hp, maxHp) {
         this.entity = entity;
         this.points = points;
+        this.hp = hp;
+        this.maxHitPoints = maxHp;
     },
     serialize: function() {
         return [Types.Messages.DAMAGE,
                 this.entity.id,
-                this.points];
+                this.points,
+                this.hp,
+                this.maxHitPoints];
     }
 });
 
@@ -168,12 +172,16 @@ Messages.Population = Message.extend({
 });
 
 Messages.Kill = Message.extend({
-    init: function(mob) {
+    init: function(mob, level, exp) {
         this.mob = mob;
+        this.level = level;
+        this.exp = exp;
     },
     serialize: function() {
         return [Types.Messages.KILL,
-                this.mob.kind];
+                this.mob.kind,
+                this.level,
+                this.exp];
     }
 });
 
@@ -206,5 +214,15 @@ Messages.Blink = Message.extend({
     serialize: function() {
         return [Types.Messages.BLINK,
                 this.item.id];
+    }
+});
+
+Messages.PVP = Message.extend({
+    init: function(isPVP){
+        this.isPVP = isPVP;
+    },
+    serialize: function(){
+        return [Types.Messages.PVP,
+                this.isPVP];
     }
 });

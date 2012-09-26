@@ -8,21 +8,24 @@ var cls = require("./lib/class"),
 module.exports = Mob = Character.extend({
     init: function(id, kind, x, y) {
         this._super(id, "mob", kind, x, y);
-        
         this.updateHitPoints();
         this.spawningX = x;
         this.spawningY = y;
-        this.armorLevel = Properties.getArmorLevel(this.kind);
-        this.weaponLevel = Properties.getWeaponLevel(this.kind);
+        this.armorLevel = 0;
+        this.weaponLevel = 0;
+        this.level = Types.getMobLevel(kind);
         this.hatelist = [];
         this.respawnTimeout = null;
         this.returnTimeout = null;
         this.isDead = false;
+        this.hateCount = 0;
+        this.tankerlist = [];
     },
     
     destroy: function() {
         this.isDead = true;
         this.hatelist = [];
+        this.tankerlist = [];
         this.clearTarget();
         this.updateHitPoints();
         this.resetPosition();
@@ -63,6 +66,37 @@ module.exports = Mob = Character.extend({
             this.returnTimeout = null;
         }
     },
+    addTanker: function(playerId){
+      var i=0;
+      for(i=0; i<this.tankerlist.length; i++){
+        if(this.tankerlist[i].id === playerId){
+          this.tankerlist[i].points++;
+          break;
+        }
+      }
+      if(i >= this.tankerlist.length){
+        this.tankerlist.push({id: playerId, points: 1});
+      }
+    },
+    getMainTankerId: function(){
+      var i=0;
+      var mainTanker = null;
+      for(i=0; i<this.tankerlist.length; i++){
+        if(mainTanker === null){
+          mainTanker = this.tankerlist[i];
+          continue;
+        }
+        if(mainTanker.points < this.tankerlist[i].points){
+          mainTanker = this.tankerlist[i];
+        }
+      }
+
+      if(mainTanker){
+        return mainTanker.id;
+      } else{
+        return null;
+      }
+    },
     
     getHatedPlayerId: function(hateRank) {
         var i, playerId,
@@ -73,7 +107,18 @@ module.exports = Mob = Character.extend({
             i = size - hateRank;
         }
         else {
-            i = size - 1;
+            if(size === 1){
+              i = size - 1;
+            } else{
+              this.hateCount++;
+              if(this.hateCount > size*1.3){
+                this.hateCount = 0;
+                i = size - 1 - Utils.random(size-1);
+                log.info("CHANGE TARGET: " + i);
+              } else{
+                return 0;
+              }
+            }
         }
         if(sorted && sorted[i]) {
             playerId = sorted[i].id;
@@ -84,6 +129,7 @@ module.exports = Mob = Character.extend({
     
     forgetPlayer: function(playerId, duration) {
         this.hatelist = _.reject(this.hatelist, function(obj) { return obj.id === playerId; });
+        this.tankerlist = _.reject(this.tankerlist, function(obj) { return obj.id === playerId; });
         
         if(this.hatelist.length === 0) {
             this.returnToSpawningPosition(duration);
@@ -92,6 +138,7 @@ module.exports = Mob = Character.extend({
     
     forgetEveryone: function() {
         this.hatelist = [];
+        this.tankerlist = [];
         this.returnToSpawningPosition(1);
     },
     

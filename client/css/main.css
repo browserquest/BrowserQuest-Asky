@@ -1,4 +1,4 @@
-/* Eric Meyer's CSS reset */
+/* iric Meyer's CSS reset */
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -152,6 +152,7 @@ footer, header, hgroup, menu, nav, section {
 	#hitpoints {background:#d83939;-moz-transition:.5s width ease;-webkit-transition:.5s width ease;-o-transition:.5s width ease;-ms-transition:.5s width ease;transition:.5s width ease;}
     #hitpoints.white {-moz-animation:flash 0.5s linear 1;-webkit-animation:flash 0.5s linear 1;-o-animation:flash 0.5s linear 1;-ms-animation:flash 0.5s linear 1;animation:flash 0.5s linear 1;}
 	#hitpoints.invincible {-moz-animation:invincible 0.3s steps(3, end) alternate infinite;-webkit-animation:invincible 0.3s steps(3, end) alternate infinite;-o-animation:invincible 0.3s steps(3, end) alternate infinite;-ms-animation:invincible 0.3s steps(3, end) alternate infinite;}
+	#hpguide {background: rgb(128,64,64); position: absolute; display: none; }
     
     #notifications {position:absolute;left:50%;text-align:center;font-family:'GraphicPixel';overflow:hidden;}
     #notifications div {position:absolute;-moz-transition:none;-webkit-transition:none;top:0;width:100%;}
@@ -275,6 +276,31 @@ footer, header, hgroup, menu, nav, section {
       clear: left;
     }
 
+    #dropDialog {
+      font-family:'GraphicPixel';
+      font-size: 9pt;
+      color:#e3e3e3;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-left: -76px;
+      margin-top: -23px;
+      padding: 5px;
+      background: rgba(45, 45, 45, 0.8);
+      border-radius: 6px 6px 6px 6px;
+      display: none;
+    }
+    #dropDialog.active {
+      display: block;
+    }
+    #dropTitle {
+      text-align: center;
+    }
+    #dropAccept, #dropCancel {
+      background: rgb(120, 120, 120);
+      cursor: hand;
+    }
+
     .bubble p {-moz-user-select:none;-webkit-user-select:none;}
     
     #instructions {position:absolute;top:50%;left:50%;z-index:1000;font-family:'GraphicPixel';pointer-events:none;opacity:0;-moz-transition:0.25s opacity linear;-webkit-transition:0.4s top ease, 0.4s opacity linear;-o-transition:0.4s top ease, 0.4s opacity linear;-ms-transition:0.4s top ease, 0.4s opacity linear;transition:0.4s top ease, 0.4s opacity linear;}
@@ -301,60 +327,6 @@ footer, header, hgroup, menu, nav, section {
     
 	#bubbles a {pointer-events:auto;text-decoration:none;color:#fcda5c;}
 
-    #chatLog{
-      position: absolute;
-      top: 100%;
-      left: 1%;
-      width: 97%;
-      background: rgba(45,45,45,0.6);
-      padding: 5px;
-      overflow-y: scroll;
-      overflow-x: hide;
-      max-height: 15%;
-      border-radius: 0 3px 0 0;
-    }
-    #chatLog p{
-      margin-bottom: 3px;
-      padding: 0;
-      line-height: 1;
-      color: rgba(255,255,255,1);
-    }
-    #chatLog p .name{
-      font-weight: bold;
-    }
-
-    #expbar{
-      position: absolute;
-      bottom: 8.5%;
-      left: 98.6%;
-      width: 0.5%;
-      background: rgba(0,0,255,0.3);
-      height: 90%;
-      margin-left: 0px;
-      padding: 0px;
-      border: 0px;
-    }
-
-    #textWindow{
-      position: absolute;
-      top: 30%;
-      left: 5%;
-      width: 88%;
-      height: 50%;
-      background: rgba(0,0,0,0.7);
-      color: rgba(255, 255, 255, 1);
-      margin-left: 0px;
-      padding: 1%;
-      border: 0px;
-    }
-    #textWindow h1 {font-size:64px;}
-    #textWindow h2 {font-size:48px;}
-    #textWindow h3 {font-size:32px;}
-    #textWindow h4 {font-size:24px;}
-    #textWindow h5 {font-size:16px;text-indent:16px;}
-    #textWindow h6 {font-size:12px;text-indent:32px;}
-    #textWindow p {font-size:12px;text-indent:32px;margin:2px 2px;}
-    #textWindow td {color: rgba(255, 255, 255, 1);}
 
     #create-new span:hover, #cancel span:hover {cursor:pointer;color:#d83939;}
     #create-new span span {color:#b2af9b;}
@@ -614,7 +586,210 @@ footer, header, hgroup, menu, nav, section {
         .button.delete {background-position:-687px -153px;}
         .button.delete:active {background-position:0 -2178px;}
         
-		#container {width:1470px;margin:0 auto;position:absolute;top:50%;margin-top:-378px;left:50%;margin-left:-735px;}
+		#container{
+          width:1470px;
+          margin:0 auto;
+          position:absolute;
+          top:0px;
+          margin-top:0px;
+          left:50%;
+          margin-left:-735px;
+        }
+    #chatLog{
+      position: absolute; 
+      width: 1170px;
+      left: 50%;
+      margin-left: -735px;
+      top: 750px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(45, 45, 45, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+    #chatLog p{
+      margin-bottom: 3px;
+      padding: 0;
+      line-height: 1;
+      color: rgba(255,255,255,1);
+    }
+    #chatLog p .name{
+      font-weight: bold;
+    }
+    #kungLog{
+      position: absolute; 
+      width: 280px;
+      left: 50%;
+      margin-left: 455px;
+      top: 750px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(45, 45, 45, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+    #kungLog p{
+      margin-bottom: 3px;
+      padding: 0;
+      line-height: 1;
+      color: rgba(255,255,255,1);
+    }
+
+    #board{
+      position: absolute; 
+      width: 1470px;
+      left: 50%;
+      margin-left: -735px;
+      top: 750px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(255, 255, 2555, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+#board td, #board th
+{
+  font-size:1.2em;
+  border:1px solid #98bf21;
+  padding:3px 7px 2px 7px;
+  margin:10px 10px 10px 10px;
+}
+#board th
+{
+  font-size:1.4em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#A7C942;
+  color:#fff;
+}
+#board tr.alt td
+{
+  color:#000;
+  background-color:#EAF2D3;
+}
+
+
+#gamebutton {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 50%;
+  margin-left: -767px;
+  top: 750px;
+  border: 1px solid #9C9898;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  display: none;
+}
+
+#boardbutton {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 50%;
+  margin-left: -767px;
+  top: 780px;
+  border: 1px solid #9C9898;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  display: none;
+}
+#up {
+  position: relative;
+  top: 10px;
+  width: 100px;
+  height: 30px;
+  background: rgba(0, 0, 255, 0.7);
+  text-align: center;
+}
+#down {
+  position: relative;
+  top: -20px;
+  width: 100px;
+  height: 30px;
+  margin-left: 110px;
+  background: rgba(255, 0, 0, 0.7);
+  text-align: center;
+}
+#write {
+  position: relative;
+  width: 100px;
+  height: 30px;
+  background: rgba(0, 255, 0, 0.7);
+  text-align: center;
+}
+#prevpage {
+  background: rgba(255, 0, 255, 0.7);
+}
+#nextpage {
+  width: 100px;
+  height: 30px;
+  background: rgba(255, 0, 255, 0.7);
+}
+#viewreply {
+  position: relative;
+  width: 100px;
+  height: 30px;
+  background: rgba(255, 255, 0, 0.7);
+}
+
+#boardlist1 {}
+#boardlist2 {}
+#boardlist3 {}
+#boardlist4 {}
+#boardlist5 {}
+#boardlist6 {}
+#boardlist7 {}
+#boardlist8 {}
+#boardlist9 {}
+#boardlist10 {}
+
+tr:hover {
+  background: rgba(0, 128, 0, 0.5);
+}
+
+#adsense {}
+    #expbar{
+      position: absolute;
+      bottom: 8.5%;
+      left: 98.6%;
+      width: 0.5%;
+      background: rgba(0,0,255,0.3);
+      height: 90%;
+      margin-left: 0px;
+      padding: 0px;
+      border: 0px;
+    }
+
+    #textWindow{
+      position: absolute;
+      top: 30%;
+      left: 5%;
+      width: 88%;
+      height: 50%;
+      background: rgba(0,0,0,0.7);
+      color: rgba(255, 255, 255, 1);
+      margin-left: 0px;
+      padding: 1%;
+      border: 0px;
+    }
+    #textWindow h1 {font-size:64px;}
+    #textWindow h2 {font-size:48px;}
+    #textWindow h3 {font-size:32px;}
+    #textWindow h4 {font-size:24px;}
+    #textWindow h5 {font-size:16px;text-indent:16px;}
+    #textWindow h6 {font-size:12px;text-indent:32px;}
+    #textWindow p {font-size:12px;text-indent:32px;margin:2px 2px;}
+    #textWindow td {color: rgba(255, 255, 255, 1);}
 		#canvasborder {padding:15px;background:url('../img/3/border.png') no-repeat;}
 		#canvas {width:100%;height:672px;}
 		#fade {width:1440px;height:672px;top:15px;left:15px;}
@@ -659,6 +834,7 @@ footer, header, hgroup, menu, nav, section {
 
 		#healthbar {height:39px;background-position:0 -51px;width:306px;top:9px;background-size:1440px;z-index:20;}
 		#hitpoints {width:0px;height:33px;top:12px;left:33px;z-index:10;position:absolute;}
+		#hpguide {left: 33x; top: 12px; width: 2px; height: 33px; z-index: 30; }
 
         #armor, #weapon {width:48px;height:48px;position:absolute;background-size:288px;background-position:-96px;}
         #weapon {left:312px;top:3px;background-size:288px;}
@@ -775,7 +951,209 @@ footer, header, hgroup, menu, nav, section {
         .button.delete {background-position:-458px -102px;}
         .button.delete:active {background-position:0 -1452px;}
         
-		#container {width:980px;margin:0 auto;position:absolute;top:0%;margin-top:50px;left:50%;margin-left:-490px;}
+		#container{
+          width:980px;
+          margin:0 auto;
+          position:absolute;
+          top:0px;
+          margin-top:0px;
+          left:50%;
+          margin-left:-490px;
+        }
+    #chatLog{
+      position: absolute; 
+      width: 660px;
+      left: 50%;
+      margin-left: -480px;
+      top: 500px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(45, 45, 45, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+    #chatLog p{
+      margin-bottom: 3px;
+      padding: 0;
+      line-height: 1;
+      color: rgba(255,255,255,1);
+    }
+    #chatLog p .name{
+      font-weight: bold;
+    }
+    #kungLog{
+      position: absolute; 
+      width: 280px;
+      left: 50%;
+      margin-left: 200px;
+      top: 500px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(45, 45, 45, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+    #kungLog p{
+      margin-bottom: 3px;
+      padding: 0;
+      line-height: 1;
+      color: rgba(255,255,255,1);
+    }
+
+    #board{
+      position: absolute; 
+      width: 960px;
+      left: 50%;
+      margin-left: -480px;
+      top: 500px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(255, 255, 2555, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+#board td, #board th
+{
+  font-size:1.2em;
+  border:1px solid #98bf21;
+  padding:10px 10px 10px 10px;
+}
+#board th
+{
+  font-size:1.4em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#A7C942;
+  color:#fff;
+}
+#board tr.alt td
+{
+  color:#000;
+  background-color:#EAF2D3;
+}
+
+
+#gamebutton {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 50%;
+  margin-left: -512px;
+  top: 500px;
+  border: 1px solid #9C9898;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  display: none;
+}
+
+#boardbutton {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 50%;
+  margin-left: -512px;
+  top: 530px;
+  border: 1px solid #9C9898;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  display: none;
+}
+
+#up {
+  position: relative;
+  top: 10px;
+  width: 100px;
+  height: 30px;
+  background: rgba(0, 0, 255, 0.7);
+  text-align: center;
+}
+#down {
+  position: relative;
+  top: -20px;
+  width: 100px;
+  height: 30px;
+  margin-left: 110px;
+  background: rgba(255, 0, 0, 0.7);
+  text-align: center;
+}
+#write {
+  position: relative;
+  width: 100px;
+  height: 30px;
+  background: rgba(0, 255, 0, 0.7);
+  text-align: center;
+}
+#prevpage {
+  background: rgba(255, 0, 255, 0.7);
+}
+#nextpage {
+  width: 100px;
+  height: 30px;
+  background: rgba(255, 0, 255, 0.7);
+}
+#viewreply {
+  position: relative;
+  width: 100px;
+  height: 30px;
+  background: rgba(255, 255, 0, 0.7);
+}
+
+#boardlist1 {}
+#boardlist2 {}
+#boardlist3 {}
+#boardlist4 {}
+#boardlist5 {}
+#boardlist6 {}
+#boardlist7 {}
+#boardlist8 {}
+#boardlist9 {}
+#boardlist10 {}
+
+tr:hover {
+  background: rgba(0, 128, 0, 0.5);
+}
+
+    #expbar{
+      position: absolute;
+      bottom: 8.5%;
+      left: 98.6%;
+      width: 0.5%;
+      background: rgba(0,0,255,0.3);
+      height: 90%;
+      margin-left: 0px;
+      padding: 0px;
+      border: 0px;
+    }
+
+    #textWindow{
+      position: absolute;
+      top: 30%;
+      left: 5%;
+      width: 88%;
+      height: 50%;
+      background: rgba(0,0,0,0.7);
+      color: rgba(255, 255, 255, 1);
+      margin-left: 0px;
+      padding: 1%;
+      border: 0px;
+    }
+    #textWindow h1 {font-size:64px;}
+    #textWindow h2 {font-size:48px;}
+    #textWindow h3 {font-size:32px;}
+    #textWindow h4 {font-size:24px;}
+    #textWindow h5 {font-size:16px;text-indent:16px;}
+    #textWindow h6 {font-size:12px;text-indent:32px;}
+    #textWindow p {font-size:12px;text-indent:32px;margin:2px 2px;}
+    #textWindow td {color: rgba(255, 255, 255, 1);}
 		#canvasborder {padding:10px;background:url('../img/2/border.png') no-repeat;}
 		#canvas {width:100%;height:448px;}
 		#fade {width:960px;height:448px;top:10px;left:10px;}
@@ -819,6 +1197,7 @@ footer, header, hgroup, menu, nav, section {
 
 		#healthbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
 		#hitpoints {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
+		#hpguide {left: 22x; top: 8px; width: 2px; height: 22px; z-index: 30; }
 
         #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}
         #weapon {left:208px;top:2px;}
@@ -936,7 +1315,135 @@ footer, header, hgroup, menu, nav, section {
         .button.delete {background-position:-458px -102px;}
         .button.delete:active {background-position:0 -1452px;}
         
-		#container {width:980px;margin:0 auto;position:absolute;top:50%;margin-top:-252px;left:50%;margin-left:-490px;}
+		#container{
+          width:980px;
+          margin:0 auto;
+          position:absolute;
+          top:0px;
+          margin-top:0px;
+          left:50%;
+          margin-left:-490px;
+        }
+    #chatLog{
+      position: absolute; 
+      width: 960px;
+      left: 50%;
+      margin-left: -480px;
+      top: 500px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(45, 45, 45, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+    #chatLog p{
+      margin-bottom: 3px;
+      padding: 0;
+      line-height: 1;
+      color: rgba(255,255,255,1);
+    }
+    #chatLog p .name{
+      font-weight: bold;
+    }
+
+    #board{
+      position: absolute; 
+      width: 960px;
+      left: 50%;
+      margin-left: -480px;
+      top: 500px;
+      bottom: 10px;
+      border: 1px solid #9C9898;
+      background: rgba(255, 255, 2555, 1);
+      padding: 5px;
+      overflow-y: scroll;
+      overflow-x: hide;
+      display: none;
+    }
+#board td, #board th
+{
+  font-size:1.2em;
+  border:1px solid #98bf21;
+  padding:3px 7px 2px 7px;
+}
+#board th
+{
+  font-size:1.4em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#A7C942;
+  color:#fff;
+}
+#board tr.alt td
+{
+  color:#000;
+  background-color:#EAF2D3;
+}
+
+
+#gamebutton {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 50%;
+  margin-left: -512px;
+  top: 500px;
+  border: 1px solid #9C9898;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  display: none;
+}
+
+#boardbutton {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 50%;
+  margin-left: -512px;
+  top: 530px;
+  border: 1px solid #9C9898;
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  display: none;
+}
+
+    #expbar{
+      position: absolute;
+      bottom: 8.5%;
+      left: 98.6%;
+      width: 0.5%;
+      background: rgba(0,0,255,0.3);
+      height: 90%;
+      margin-left: 0px;
+      padding: 0px;
+      border: 0px;
+    }
+
+    #textWindow{
+      position: absolute;
+      top: 30%;
+      left: 5%;
+      width: 88%;
+      height: 50%;
+      background: rgba(0,0,0,0.7);
+      color: rgba(255, 255, 255, 1);
+      margin-left: 0px;
+      padding: 1%;
+      border: 0px;
+    }
+    #textWindow h1 {font-size:64px;}
+    #textWindow h2 {font-size:48px;}
+    #textWindow h3 {font-size:32px;}
+    #textWindow h4 {font-size:24px;}
+    #textWindow h5 {font-size:16px;text-indent:16px;}
+    #textWindow h6 {font-size:12px;text-indent:32px;}
+    #textWindow p {font-size:12px;text-indent:32px;margin:2px 2px;}
+    #textWindow td {color: rgba(255, 255, 255, 1);}
 		#canvasborder {padding:10px;background:url('../img/2/border.png') no-repeat;}
 		#canvas {width:100%;height:448px;}
 		#fade {width:960px;height:448px;top:10px;left:10px;}
@@ -980,6 +1487,7 @@ footer, header, hgroup, menu, nav, section {
 
 		#healthbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
 		#hitpoints {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
+		#hpguide {left: 22x; top: 8px; width: 2px; height: 22px; z-index: 30; }
 
         #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}
         #weapon {left:208px;top:2px;}
@@ -1139,6 +1647,7 @@ footer, header, hgroup, menu, nav, section {
 
 		#healthbar {height:13px;background-position:0 -17px;width:102px;top:3px;background-size:480px;z-index:20;}
 		#hitpoints {width:0px;height:11px;top:4px;left:11px;z-index:10;position:absolute;}
+		#hpguide {left: 11x; top: 4px; width: 1px; height: 11px; z-index: 30; }
 
         #armor, #weapon {width:16px;height:16px;position:absolute;background-size:96px;background-position:-32px;}
         #weapon {left:104px;top:1px;}
@@ -1299,6 +1808,7 @@ footer, header, hgroup, menu, nav, section {
 
 		#healthbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
 		#hitpoints {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
+		#hpguide {left: 22x; top: 8px; width: 2px; height: 22px; z-index: 30; }
 
         #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}
         #weapon {left:208px;top:2px;}

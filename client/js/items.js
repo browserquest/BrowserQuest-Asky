@@ -148,8 +148,51 @@ define(['item'], function(Item) {
         }),
         Forestguardiansword: Item.extend({
             init: function(id) {
-                this._super(id, Types.Entities.Forestguardiansword, "weapon");
+                this._super(id, Types.Entities.FORESTGUARDIANSWORD, "weapon");
                 this.lootMessage = "포레스트 가디언 소드 득템";
+            },
+        }),
+        Sickle: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.SICKLE, "weapon");
+                this.lootMessage = "낫 득템";
+            },
+        }),
+        Plunger: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.PLUNGER, "weapon");
+                this.lootMessage = "뚫어뻥 득템";
+            },
+        }),
+        Redsickle: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.REDSICKLE, "weapon");
+                this.lootMessage = "붉은 낫 득템";
+            },
+        }),
+        Daywalker: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.DAYWALKER, "weapon");
+                this.lootMessage = "데이워커 득템";
+            },
+        }),
+        Purplecloudkallege: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.PURPLECLOUDKALLEGE, "weapon");
+                this.lootMessage = "자운의 칼리지 득템";
+            },
+        }),
+        Searage: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.SEARAGE, "weapon");
+                this.lootMessage = "바다의 격노 득템";
+            },
+        }),
+
+        ClothArmor: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.CLOTHARMOR, "armor");
+                this.lootMessage = "면 갑옷 득템";
             },
         }),
 
@@ -352,7 +395,37 @@ define(['item'], function(Item) {
         Taekwondo: Item.extend({
             init: function(id) {
                 this._super(id, Types.Entities.TAEKWONDO, "armor");
-                this.lootMessage = "고스트라이더 아머 득템";
+                this.lootMessage = "태권도복 득템";
+            },
+        }),
+        AdminArmor: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.ADMINARMOR, "armor");
+                this.lootMessage = "운영자 아머 득템";
+            },
+        }),
+        RabbitArmor: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.RABBITARMOR, "armor");
+                this.lootMessage = "토끼 갑옷 득템";
+            },
+        }),
+        PortalArmor: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.PORTALARMOR, "armor");
+                this.lootMessage = "포탈 갑옷 득템";
+            },
+        }),
+        PirateKing: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.PIRATEKING, "armor");
+                this.lootMessage = "해적왕 옷 득템";
+            },
+        }),
+        SeadragonArmor: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.SEADRAGONARMOR, "armor");
+                this.lootMessage = "해신린 득템";
             },
         }),
 
@@ -385,6 +458,18 @@ define(['item'], function(Item) {
     
             onLoot: function(player) {
                 player.startInvincibility();
+            },
+        }),
+        Book: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.BOOK, "object");
+                this.lootMessage = "공부 재미쩡!";
+            },
+        }),
+        Cd: Item.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.CD, "object");
+                this.lootMessage = "둠칫! 둠칫!";
             },
         }),
     };

@@ -11,6 +11,23 @@ define(['jquery'], function($) {
             this.watchNameInputInterval = setInterval(this.toggleButton.bind(this), 100);
             this.$playButton = $('.play'),
             this.$playDiv = $('.play div');
+
+            this.inventoryNumber = 0;
+            this.dropDialogPopuped = false;
+
+            var self = this;
+            $('#boardbutton').click(function(event){
+              if(self.game && self.ready){
+                self.game.chathandler.hide();
+                self.game.boardhandler.show();
+              }
+            });
+            $('#gamebutton').click(function(event){
+              if(self.game && self.ready){
+                self.game.chathandler.show();
+                self.game.boardhandler.hide();
+              }
+            });
         },
         
         setGame: function(game) {
@@ -147,6 +164,9 @@ define(['jquery'], function($) {
                     x = ((sprite.animationData.idle_down.length-1)*sprite.width),
                     y = ((sprite.animationData.idle_down.row)*sprite.height);
                 $(el+' .name').text(name);
+                if(el === '#inspector'){
+                  $(el + ' .details').text("level." + Types.getMobLevel(Types.getKindFromString(name)));
+                }
                 $(el+' .headshot div').height(sprite.height).width(sprite.width);
                 $(el+' .headshot div').css('margin-left', -sprite.width/2).css('margin-top', -sprite.height/2);
                 $(el+' .headshot div').css('background', 'url(img/1/'+name+'.png) no-repeat -'+x+'px -'+y+'px');
@@ -257,6 +277,26 @@ define(['jquery'], function($) {
                 $('#chatbox .legend').fadeOut('fast');
                 $('#chatinput').blur();
                 $('#chatbutton').removeClass('active');
+            }
+        },
+
+        showDropDialog: function(inventoryNumber) {
+            if(this.game.started) {
+                $('#dropDialog').addClass('active');
+                $('#dropCount').focus();
+                $('#dropCount').select();
+                
+                this.inventoryNumber = inventoryNumber;
+                this.dropDialogPopuped = true;
+            }
+        },
+        
+        hideDropDialog: function() {
+            if(this.game.started) {
+                $('#dropDialog').removeClass('active');
+                $('#dropCount').blur();
+
+                this.dropDialogPopuped = false;
             }
         },
 
@@ -426,7 +466,7 @@ define(['jquery'], function($) {
                 $p.append($a);
             });
 //            $('#total-achievements').text($('#achievements').find('li').length);
-            $('#total-achievements').text(3);
+            $('#total-achievements').text(8);
         },
         initUnlockedAchievements: function(achievements){
             var self = this,

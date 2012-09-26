@@ -34,7 +34,7 @@ module.exports = MobArea = Area.extend({
         var self = this;
         
         this.removeFromArea(mob);
-        
+
         setTimeout(function() {
             var pos = self._getRandomPositionInsideArea();
             

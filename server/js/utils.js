@@ -66,3 +66,15 @@ Utils.distanceTo = function(x, y, x2, y2) {
 
     return (distX > distY) ? distX : distY;
 };
+
+Utils.NaN2Zero = function(num){
+    if(isNaN(num*1)){
+        return 0;
+    } else{
+        return num*1;
+    }
+};
+
+Utils.trueFalse = function(bool){
+    return bool === "true" ? true : false;
+}

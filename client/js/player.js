@@ -20,6 +20,11 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
             // Inventory
             this.inventory = [];
+            this.inventoryCount = [];
+            this.healingCoolTimeCallback = null;
+
+            this.magicCoolTimeCallback = null;
+            this.healTargetName = null;
         
             // modes
             this.isLootMoving = false;
@@ -34,10 +39,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
     
         loot: function(item) {
             if(item) {
-                var rank, currentRank, msg, currentArmorName;
+                var rank, currentRank, msg;
             
-                currentArmorName = this.spriteName;
-
                 if(item.type === "weapon") {
                     rank = Types.getWeaponRank(item.kind);
                     currentRank = Types.getWeaponRank(Types.getKindFromString(this.weaponName));
@@ -51,7 +54,27 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                         }
                     }
                 } else if(item.type === "armor"){
-                    this.setInventory(item.kind, 0);
+                    if(this.level >= 100){
+                      this.putInventory(item.kind, 1);
+                    } else{
+                      rank = Types.getArmorRank(item.kind);
+                      currentRank = Types.getArmorRank(Types.getKindFromString(this.armorName));
+                      msg = "You are wielding a better armor";
+
+                      if(rank && currentRank) {
+                        if(rank === currentRank) {
+                            throw new Exceptions.LootException("You already have this "+item.type);
+                        } else if(rank <= currentRank) {
+                            throw new Exceptions.LootException(msg);
+                        }
+                      }
+                    }
+                } else if(item.kind === Types.Entities.CAKE){
+                    this.putInventory(item.kind, 1);
+                } else if(Types.isHealingItem(item.kind)){
+                    this.putInventory(item.kind, item.count);
+                } else if(item.kind === Types.Entities.CD){
+                    this.putInventory(item.kind, 1);
                 }
             
                 log.info('Player '+this.id+' has looted '+item.id);
@@ -61,21 +84,63 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 item.onLoot(this);
             }
         },
-        setInventory: function(itemKind, inventoryNumber){
-            if(inventoryNumber === 0){
-                if(this.inventory[0]){
-                    this.inventory[1] = itemKind;
+        putInventory: function(itemKind, count){
+            if(Types.isHealingItem(itemKind)){
+                if(this.inventory[0] === itemKind){
+                    this.inventoryCount[0] += count;
+                } else if(this.inventory[1] === itemKind){
+                    this.inventoryCount[1] += count;
                 } else{
-                    this.inventory[0] = itemKind;
+                    this._putInventory(itemKind, count);
                 }
-            } else if(inventoryNumber === 1){
-                this.inventory[1] = itemKind;
+            } else{
+                this._putInventory(itemKind, count);
             }
+        },
+        _putInventory: function(itemKind, count){
+            if(!this.inventory[0]){
+                this.inventory[0] = itemKind;
+                this.inventoryCount[0] = count;
+            } else if(!this.inventory[1]){
+                this.inventory[1] = itemKind;
+                this.inventoryCount[1] = count;
+            } else{
+                throw new Exceptions.LootException("인벤토리가 빈 공간이 없습니다.");
+            }
+        },
+        setInventory: function(itemKind, inventoryNumber, number){
+            this.inventory[inventoryNumber] = itemKind;
+            this.inventoryCount[inventoryNumber] = number;
         },
         makeEmptyInventory: function(inventoryNumber){
             if(inventoryNumber === 0 || inventoryNumber === 1){
                 this.inventory[inventoryNumber] = null;
             }
+        },
+        decInventory: function(inventoryNumber){
+            var self = this;
+
+            if(this.healingCoolTimeCallback === null){
+                this.healingCoolTimeCallback = setTimeout(function(){
+                    self.healingCoolTimeCallback = null;
+                }, 500);
+                this.inventoryCount[inventoryNumber] -= 1;
+                if(this.inventoryCount[inventoryNumber] <= 0){
+                    this.inventory[inventoryNumber] = null;
+                }
+                return true;
+            }
+            return false;
+        },
+        magicCoolTimeCheck: function(){
+          var self = this;
+          if(this.magicCoolTimeCallback === null){
+            this.magicCoolTimeCallback = setTimeout(function(){
+              self.magicCoolTimeCallback = null;
+            }, 10000000);
+            return true;
+          }
+          return false;
         },
     
         /**
@@ -143,6 +208,14 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 }
             }
         },
+        switchArmor: function(armorName, sprite){
+            this.setSpriteName(armorName);
+            this.setSprite(sprite);
+            this.setArmorName(armorName);
+            if(this.switch_callback) {
+              this.switch_callback();
+            }
+        },
     
         switchWeapon: function(newWeaponName) {
             var count = 14, 
@@ -178,6 +251,9 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                     }
                 }, 90);
             }
+        },
+        onArmorLoot: function(callback){
+            this.armorloot_callback = callback;
         },
     
         onSwitchItem: function(callback) {

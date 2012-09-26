@@ -72,8 +72,8 @@ define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs
         return new Mobs.Wizard(id);
     };
 
-    EntityFactory.builders[Types.Entities.BOSS] = function(id) {
-        return new Mobs.Boss(id);
+    EntityFactory.builders[Types.Entities.SKELETONKING] = function(id) {
+        return new Mobs.Skeletonking(id);
     };
     EntityFactory.builders[Types.Entities.ORC] = function(id) {
         return new Mobs.Orc(id);
@@ -243,11 +243,32 @@ define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs
     EntityFactory.builders[Types.Entities.DARKREGIONILLUSION] = function(id) {
         return new Mobs.Darkregionillusion(id);
     };
-    EntityFactory.builders[Types.Entities.BLOODREGION] = function(id) {
-        return new Mobs.Bloodregion(id);
+    EntityFactory.builders[Types.Entities.NIGHTMAREREGION] = function(id) {
+        return new Mobs.Nightmareregion(id);
     };
     EntityFactory.builders[Types.Entities.DARKOGRE] = function(id) {
         return new Mobs.Darkogre(id);
+    };
+    EntityFactory.builders[Types.Entities.PAIN] = function(id) {
+        return new Mobs.Pain(id);
+    };
+    EntityFactory.builders[Types.Entities.ICEVULTURE] = function(id) {
+        return new Mobs.Icevulture(id);
+    };
+    EntityFactory.builders[Types.Entities.REGIONHENCHMAN] = function(id) {
+        return new Mobs.Regionhenchman(id);
+    };
+    EntityFactory.builders[Types.Entities.PURPLEPRETA] = function(id) {
+        return new Mobs.Purplepreta(id);
+    };
+    EntityFactory.builders[Types.Entities.FLAREDEATHKNIGHT] = function(id) {
+        return new Mobs.Flaredeathknight(id);
+    };
+    EntityFactory.builders[Types.Entities.SNOWLADY] = function(id) {
+        return new Mobs.Snowlady(id);
+    };
+    EntityFactory.builders[Types.Entities.SEADRAGON] = function(id) {
+        return new Mobs.Seadragon(id);
     };
 
     //===== items ======
@@ -329,7 +350,28 @@ define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs
     EntityFactory.builders[Types.Entities.FORESTGUARDIANSWORD] = function(id) {
         return new Items.Forestguardiansword(id);
     };
+    EntityFactory.builders[Types.Entities.SICKLE] = function(id) {
+        return new Items.Sickle(id);
+    };
+    EntityFactory.builders[Types.Entities.PLUNGER] = function(id) {
+        return new Items.Plunger(id);
+    };
+    EntityFactory.builders[Types.Entities.REDSICKLE] = function(id) {
+        return new Items.Redsickle(id);
+    };
+    EntityFactory.builders[Types.Entities.DAYWALKER] = function(id) {
+        return new Items.Daywalker(id);
+    };
+    EntityFactory.builders[Types.Entities.PURPLECLOUDKALLEGE] = function(id) {
+        return new Items.Purplecloudkallege(id);
+    };
+    EntityFactory.builders[Types.Entities.SEARAGE] = function(id) {
+        return new Items.Searage(id);
+    };
 
+    EntityFactory.builders[Types.Entities.CLOTHARMOR] = function(id) {
+        return new Items.ClothArmor(id);
+    };
     EntityFactory.builders[Types.Entities.MAILARMOR] = function(id) {
         return new Items.MailArmor(id);
     };
@@ -433,6 +475,21 @@ define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs
     EntityFactory.builders[Types.Entities.TAEKWONDO] = function(id) {
         return new Items.Taekwondo(id);
     };
+    EntityFactory.builders[Types.Entities.ADMINARMOR] = function(id) {
+        return new Items.AdminArmor(id);
+    };
+    EntityFactory.builders[Types.Entities.RABBITARMOR] = function(id) {
+        return new Items.RabbitArmor(id);
+    };
+    EntityFactory.builders[Types.Entities.PORTALARMOR] = function(id) {
+        return new Items.PortalArmor(id);
+    };
+    EntityFactory.builders[Types.Entities.PIRATEKING] = function(id) {
+        return new Items.PirateKing(id);
+    };
+    EntityFactory.builders[Types.Entities.SEADRAGONARMOR] = function(id) {
+        return new Items.SeadragonArmor(id);
+    };
 
     EntityFactory.builders[Types.Entities.FLASK] = function(id) {
         return new Items.Flask(id);
@@ -448,6 +505,12 @@ define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs
     
     EntityFactory.builders[Types.Entities.CAKE] = function(id) {
         return new Items.Cake(id);
+    };
+    EntityFactory.builders[Types.Entities.BOOK] = function(id) {
+        return new Items.Book(id);
+    };
+    EntityFactory.builders[Types.Entities.CD] = function(id) {
+        return new Items.Cd(id);
     };
 
     EntityFactory.builders[Types.Entities.CHEST] = function(id) {

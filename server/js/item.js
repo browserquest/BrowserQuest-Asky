@@ -3,7 +3,9 @@ module.exports = Item = Entity.extend({
     init: function(id, kind, x, y) {
         this._super(id, "item", kind, x, y);
         this.isStatic = false;
-        this.isFromChest = false;
+        this.isFromChest = false; 
+
+        this.count = 1;
     },
     
     handleDespawn: function(params) {
@@ -39,5 +41,16 @@ module.exports = Item = Entity.extend({
     
     onRespawn: function(callback) {
         this.respawn_callback = callback;
+    },
+
+    getState: function() {
+        //this._super.getState().push(this.count);
+        return [
+            parseInt(this.id),
+            this.kind,
+            this.x,
+            this.y,
+            this.count
+        ];
     }
 });

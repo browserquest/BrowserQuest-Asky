@@ -5,7 +5,7 @@ define(['npc'], function(Npc) {
             init: function(id) {
                 this._super(id, Types.Entities.KING, 1);
                 this.beforeQuestCompleteTalk = [
-                    "크툴루가 레오나 공주를 잡아갔다네.",
+                    "크툴루가 맬 공주를 잡아갔다네.",
                     "제발, 공주를 구해주게."
                 ];
             }
@@ -40,6 +40,50 @@ define(['npc'], function(Npc) {
                 ];
             }
         }),
+        BeachNpc: Npc.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.BEACHNPC, 1);
+                this.beforeQuestCompleteTalk = [
+                    "게가 너무 많아서 제대로 놀 수가 없네...",
+                    "검사님, 그 검으로 게 5마리만 잡아주실 수 있나요?"
+                ];
+            }
+        }),
+        Agent: Npc.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.AGENT, 1);
+                this.beforeQuestCompleteTalk = [
+                    "아..여친 생일 케이크를 잃어버렸네...",
+                    "혹시 이 근처에서 케이크 못 보셨나요?"
+                ];
+            }
+        }),
+        Nyan: Npc.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.NYAN, 1);
+                this.idleSpeed = 50;
+                this.beforeQuestCompleteTalk = [
+                    "음악 시디 좀 찾아주겠냥?",
+                ];
+            }
+        }),
+        Rick: Npc.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.RICK, 1);
+                this.beforeQuestCompleteTalk = [
+                    "둠칫! 둠칫!",
+                ];
+            }
+        }),
+        Priest: Npc.extend({
+            init: function(id) {
+                this._super(id, Types.Entities.PRIEST, 1);
+                this.beforeQuestCompleteTalk = [
+                    "해골왕에게 죽은 친구에게 기도를 하러 왔는데 스켈레톤이 너무 많아서 할 수가 없네요...",
+                    "스켈레톤 좀 10마리만 잡아주실 수 있나요?",
+                ];
+            }
+        }),
         Guard: Npc.extend({
             init: function(id) {
                 this._super(id, Types.Entities.GUARD, 1);
@@ -68,43 +112,11 @@ define(['npc'], function(Npc) {
                 ];
             }
         }),
-        Nyan: Npc.extend({
-            init: function(id) {
-                this._super(id, Types.Entities.NYAN, 1);
-                this.idleSpeed = 50;
-                this.beforeQuestCompleteTalk = [
-                    "nyan nyan nyan nyan nyan",
-                    "nyan nyan nyan nyan nyan nyan nyan",
-                    "nyan nyan nyan nyan nyan nyan",
-                    "nyan nyan nyan nyan nyan nyan nyan nyan"
-                ];
-            }
-        }),
-        BeachNpc: Npc.extend({
-            init: function(id) {
-                this._super(id, Types.Entities.BEACHNPC, 1);
-                this.beforeQuestCompleteTalk = [
-                    "핫핫 안녕?",
-                    "안 생기지?",
-                    "말 안해도 알지?",
-                    "동정에서 벗어나는 법을 알려줄까?",
-                    "여자 옆에서 물건을... 아 넌 여자가 없구나. 미안."
-                ];
-            }
-        }),
         DesertNpc: Npc.extend({
             init: function(id) {
                 this._super(id, Types.Entities.DESERTNPC, 1);
                 this.beforeQuestCompleteTalk = [
                     "필경은 레벨의 4제곱이라네."
-                ];
-            }
-        }),
-        Priest: Npc.extend({
-            init: function(id) {
-                this._super(id, Types.Entities.PRIEST, 1);
-                this.beforeQuestCompleteTalk = [
-                    "예수천국 불신지옥"
                 ];
             }
         }),
@@ -131,16 +143,6 @@ define(['npc'], function(Npc) {
         LavaNpc: Npc.extend({
             init: function(id) {
                 this._super(id, Types.Entities.LAVANPC, 1);
-            }
-        }),
-        Agent: Npc.extend({
-            init: function(id) {
-                this._super(id, Types.Entities.AGENT, 1);
-            }
-        }),
-        Rick: Npc.extend({
-            init: function(id) {
-                this._super(id, Types.Entities.RICK, 1);
             }
         }),
         ForestNpc: Npc.extend({

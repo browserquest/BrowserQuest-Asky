@@ -97,6 +97,28 @@ define(['jquery', 'app'], function($, App) {
             $('#emailinput').bind("keyup", function() {
                 app.toggleButton();
             });
+            $('#previous').click(function(){
+                var $achievements = $('#achievements');
+
+                if(app.currentPage === 1){
+                    return false;
+                } else{
+                    app.currentPage -= 1;
+                    $achievements.removeClass().addClass('active page' + app.currentPage);
+                }
+            });
+            $('#next').click(function(){
+                var $achievements = $('#achievements'),
+                    $lists = $('#lists'),
+                    nbPages = $lists.children('ul').length;
+
+                if(app.currentPage === nbPages){
+                    return false;
+                } else{
+                    app.currentPage += 1;
+                    $achievements.removeClass().addClass('active page' + app.currentPage);
+                }
+            });
     
             $('#notifications div').bind(TRANSITIONEND, app.resetMessagesPosition.bind(app));
     
@@ -133,6 +155,33 @@ define(['jquery', 'app'], function($, App) {
                 } else{
                     app.tryStartingGame(loginname, loginpw, email);
                 }
+            });
+            
+            $('#dropAccept').click(function(event) {
+                try {
+                    var count = parseInt($('#dropCount').val());
+                    if(count > 0) {
+                        if(count > game.player.inventoryCount[app.inventoryNumber])
+                            count = game.player.inventoryCount[app.inventoryNumber];
+
+                        game.client.sendInventory("empty", app.inventoryNumber, count);
+
+                        game.player.inventoryCount[app.inventoryNumber] -= count;
+                        if(game.player.inventoryCount[app.inventoryNumber] === 0)
+                            game.player.inventory[app.inventoryNumber] = null;
+                    }
+                } catch(e) {
+                }
+
+                setTimeout(function () {
+                    app.hideDropDialog();
+                }, 100);
+            });
+            
+            $('#dropCancel').click(function(event) {
+                setTimeout(function () {
+                    app.hideDropDialog();
+                }, 100);
             });
         
             document.addEventListener("touchstart", function() {},false);
@@ -238,7 +287,8 @@ define(['jquery', 'app'], function($, App) {
                 $('#foreground').click(function(event) {
                     app.center();
                     app.setMouseCoordinates(event);
-                    if(game) {
+                    if(game && !app.dropDialogPopuped) {
+                	    game.pvpFlag = event.shiftKey;
                 	    game.click();
                 	}
                 	app.hideWindows();
@@ -270,7 +320,7 @@ define(['jquery', 'app'], function($, App) {
                     }
                 }
                 
-                if(game.started && !game.renderer.mobile && game.player && !hasClosedParchment) {
+                if(game.started && !game.renderer.mobile && game.player && !hasClosedParchment && !app.dropDialogPopuped) {
                     game.click();
                 }
             });
@@ -284,8 +334,18 @@ define(['jquery', 'app'], function($, App) {
             $(document).mousemove(function(event) {
             	app.setMouseCoordinates(event);
             	if(game.started) {
+            	    game.pvpFlag = event.shiftKey;
             	    game.movecursor();
             	}
+            });
+            
+            $(document).mouseup(function(event) { 
+                if(event.button === 2) {
+                    app.center();
+                    app.setMouseCoordinates(event);
+
+                    game.rightClick();
+                }
             });
 
             $(document).keydown(function(e) {
@@ -299,6 +359,17 @@ define(['jquery', 'app'], function($, App) {
                         app.showChat();
                     }
                 }
+                else if(key === 16)
+                    game.pvpFlag = true;
+                else if(key === 27)
+                    app.hideDropDialog();
+            });
+
+            $(document).keyup(function(e) {
+            	var key = e.which;
+
+                if(key === 16)
+                    game.pvpFlag = false;
             });
             
             $('#chatinput').keydown(function(e) {
@@ -418,13 +489,13 @@ define(['jquery', 'app'], function($, App) {
             	var key = e.which,
             	    $chat = $('#chatinput');
 
-                if($('#chatinput:focus').size() == 0 && $('#nameinput:focus').size() == 0 && game.ready) {
+                if($('#chatinput:focus').size() == 0 && $('#nameinput:focus').size() == 0 && game.ready && !app.dropDialogPopuped) {
                     if(key === 13) { // Enter
                         $chat.focus();
                         return false;
-                    } else if(key === 8 ) { // BackSpace
+                    } else if(key === 8) { // BackSpace
                         return false;
-                    } else if(key === 49){ // 1
+                    } else if(key === 49 || key === 50){ // 1,2,6
                         game.keyDown(key);
                         return false;
                     } else if(key === 107){ // +
@@ -438,6 +509,36 @@ define(['jquery', 'app'], function($, App) {
                         return false;
                     }
                 }
+            });
+
+            $('#healthbar').click(function(e) {
+                var hb = $('#healthbar'),
+                    hp = $('#hitpoints'),
+                    hpg = $('#hpguide');
+
+                var hbp = hb.position(),
+                    hpp = hp.position();
+
+                if((e.offsetX >= hpp.left) && (e.offsetX < hb.width())) {
+                    if(hpg.css('display') === 'none') {
+                        hpg.css('display', 'block');
+
+                        setInterval(function () {
+                            if(((game.player.hitPoints / game.player.maxHitPoints) <= game.hpGuide) && 
+                               (game.healShortCut >= 0) && 
+                               Types.isHealingItem(game.player.inventory[game.healShortCut]) &&
+                               (game.player.inventoryCount[game.healShortCut] > 0)
+                              ) {
+                                game.eat(game.healShortCut);
+                            }
+                        }, 100);
+                    }
+                    hpg.css('left', e.offsetX + 'px');
+
+                    game.hpGuide = (e.offsetX - hpp.left) / (hb.width()- hpp.left);
+                }
+
+                return false;
             });
             
             if(game.renderer.tablet) {

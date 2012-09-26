@@ -20,13 +20,14 @@ var cls = require("./lib/class"),
 // ======= GAME SERVER ========
 
 module.exports = World = cls.Class.extend({
-    init: function(id, maxPlayers, websocketServer) {
+    init: function(id, maxPlayers, websocketServer, databaseHandler) {
         var self = this;
 
         this.id = id;
         this.maxPlayers = maxPlayers;
         this.server = websocketServer;
         this.ups = 50;
+        this.databaseHandler = databaseHandler;
         
         this.map = null;
         
@@ -41,11 +42,16 @@ module.exports = World = cls.Class.extend({
         this.mobAreas = [];
         this.chestAreas = [];
         this.groups = {};
-        
+
         this.outgoingQueues = {};
         
         this.itemCount = 0;
         this.playerCount = 0;
+
+        this.kungWords = [];
+        this.kungRandWord = '태권도';
+        this.lastKungPlayer = null;
+        this.kungTimeCallback = null;
         
         this.zoneGroupsReady = false;
         
@@ -557,8 +563,16 @@ module.exports = World = cls.Class.extend({
                 var mob = entity,
                     item = this.getDroppedItem(mob);
 
-                attacker.incExp(Types.getMobExp(mob.kind));
-                this.pushToPlayer(attacker, new Messages.Kill(mob, attacker.level, attacker.experience));
+                var mainTanker = this.getEntityById(mob.getMainTankerId());
+
+                if(mainTanker && mainTanker instanceof Player){
+                  mainTanker.incExp(Types.getMobExp(mob.kind));
+                  this.pushToPlayer(mainTanker, new Messages.Kill(mob, mainTanker.level, mainTanker.experience));
+                } else{
+                  attacker.incExp(Types.getMobExp(mob.kind));
+                  this.pushToPlayer(attacker, new Messages.Kill(mob, attacker.level, attacker.experience));
+                }
+
                 this.pushToAdjacentGroups(mob.group, mob.despawn()); // Despawn must be enqueued before the item drop
                 if(item) {
                     this.pushToAdjacentGroups(mob.group, mob.drop(item));
@@ -876,5 +890,67 @@ module.exports = World = cls.Class.extend({
             }
         }
         return null;
+    },
+    pushKungWord: function(player, word){
+      if(this.kungTimeCallback){
+        clearTimeout(this.kungTimeCallback);
+      }
+
+      this.kungWords.push(word);
+      this.lastKungPlayer = player;
+      this.pushBroadcast(new Messages.Kung(player.name + " - " + word + " 쿵쿵따~!"));
+
+      var self = this;
+      this.kungTimeCallback = setTimeout(function(){
+        self.pushBroadcast(new Messages.Kung("쿵쿵따가 끝났습니다."));
+        if(self.lastKungPlayer && self.kungWords.length >= 10){
+          var item = self.createItem(Types.Entities.BURGER, 0, 0);
+          item.count = Math.floor(self.kungWords.length/2);
+          self.lastKungPlayer.putInventory(item);
+          self.pushBroadcast(new Messages.Kung(self.lastKungPlayer.name + ' : +' + item.count + ' burgers'));
+        }
+        self.lastKungPlayer = null;
+        self.kungWords = [];
+        self.kungTimeCallback = null;
+      }, 10000);
+    },
+    isAlreadyKung: function(word){
+      var i=0;
+      for(i=0; i<this.kungWords.length; i++){
+        if(this.kungWords[i] === word){
+          return true;
+        }
+      }
+      return false;
+    },
+    isRightKungWord: function(word){
+      if(this.kungWords.length === 0){
+        return true;
+      }
+
+      var lastWord = this.kungWords[this.kungWords.length-1];
+      if(lastWord[2] === word[0]){
+        return true;
+      }
+
+      var charCode = lastWord.charCodeAt(2) - 44032;
+      var chosung = Math.floor(Math.floor(charCode/21)/28);
+      if(chosung === 2){ // ㄴ
+        var oCode = String.fromCharCode(charCode + 44032 + 9*21*28); // ㄴ to ㅇ
+        if(oCode === word[0]){
+          return true;
+        }
+      } else if(chosung === 5){ // ㄹ
+        var oCode = String.fromCharCode(charCode + 44032 + 6*21*28); // ㄹ to ㅇ
+        if(oCode === word[0]){
+          return true;
+        }
+        var nCode = String.fromCharCode(charCode + 44032 - 3*21*28); // ㄹ to ㄴ
+        if(nCode === word[0]){
+          return true;
+        }
+      }
+
+      return false;
     }
 });

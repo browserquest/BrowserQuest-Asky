@@ -35,7 +35,7 @@ function main(config) {
             log = new Log(Log.INFO); break;
     };
     
-    log.info("Starting BrowserQuest game server...");
+    log.info("Starting ASKY game server...");
     databaseHandler = new DatabaseHandler();
     
     server.onConnect(function(connection) {
@@ -77,7 +77,7 @@ function main(config) {
     };
 
     _.each(_.range(config.nb_worlds), function(i) {
-        var world = new WorldServer('world'+ (i+1), config.nb_players_per_world, server);
+        var world = new WorldServer('world'+ (i+1), config.nb_players_per_world, server, databaseHandler);
         world.run(config.map_filepath);
         worlds.push(world);
         if(metrics) {

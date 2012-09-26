@@ -19,7 +19,11 @@ See the LICENSE file for details.
 
 Credits
 -------
-Created by [Little Workshop](http://www.littleworkshop.fr):
+Originally created by [Little Workshop](http://www.littleworkshop.fr):
 
 * Franck Lecollinet - [@whatthefranck](http://twitter.com/whatthefranck)
 * Guillaume Lecollinet - [@glecollinet](http://twitter.com/glecollinet)
+
+Substantial modifications in this version by [Asky](http://asky.freethinker.kr):
+* RedPain: yootiong@hanmail.net
+* Heyyo: kinora@gmail.com
